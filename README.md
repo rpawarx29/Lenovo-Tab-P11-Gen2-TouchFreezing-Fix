@@ -297,5 +297,6 @@ The script extracts the stock ramdisk, applies all 7 ARM64 patches, corrects the
 
 ## 12. Credits & Disclaimers
 
-* **Engineered by:** Antigravity Advanced Agentic Engineering & Binary Forensics Subsystem in collaboration with Ruturaj.
+* **Project Lead & Reverse Engineering:** **Ruturaj (@rpawarx29)**
+* **Technical Assistance:** Developed with the engineering and binary forensics assistance of Antigravity AI (Google DeepMind).
 * **Disclaimer:** This mod is provided for educational and repair purposes. Modifying kernel partitions requires an unlocked bootloader. Always maintain backups. Neither Lenovo nor the authors are responsible for any device damage resulting from misuse.
