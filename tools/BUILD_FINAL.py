@@ -29,13 +29,13 @@ TEXT_SIZE_ORIG     = 150208   # Exact original .text size
 # ============================================================
 COMBINED_MANIFEST = {
     "format": 2,
-    "name": "Himax TB350XU Final Combined Candidate v3",
+    "name": "Himax TB350XU Final Combined Candidate v4 (Typing Freeze Fix + HighSense)",
     "base_module_sha256": ORIG_MODULE_SHA256,
     "text_size": TEXT_SIZE_ORIG,
-    "variant": "highsense_plus_all_recovery_fixes",
+    "variant": "highsense_plus_all_recovery_fixes_plus_typing_freeze_fix",
     "independently_verified": True,
 
-    # All 7 patches (from v2 highsense) independently verified:
+    # All 13 patches (P1-P7 from v2 highsense + P8a-e Level IRQ + P9 Slot Desync):
     "text_patches": [
         # P1: At hx83102j_read_event_stack+0x68: original LDR X8,[X21] displaced to hook
         # Independent evidence: audit line 1036: "0x011a44: ldr x8, [x21]" = a80240f9 ✓
@@ -78,6 +78,24 @@ COMBINED_MANIFEST = {
         # Independent evidence: audit line 1839: "0x01a61c: adrp x9, #0x1a000" = 09000090 ✓
         {"offset": 0x1a61c, "old": "09000090", "new": None,
          "label": "[P7] Request HSEN mode during active settings resend"},
+
+        # P8: Force Active-Low Level-Triggered IRQ (0x2008 = IRQF_TRIGGER_LOW | IRQF_ONESHOT)
+        # Eliminates interrupt falling-edge deadlock during rapid typing / multi-finger bursts
+        {"offset": 0x164c8, "old": "00010012", "new": "e0031f2a",
+         "label": "[P8a] himax_mcu_read_ic_trigger_type: force return 0 (triggers LOW selection)"},
+        {"offset": 0x23c40, "old": "b4018c9a", "new": "f4030daa",
+         "label": "[P8b] himax_int_register_trigger: force x20=x13=0x2008 (IRQF_TRIGGER_LOW)"},
+        {"offset": 0x23cd0, "old": "b4018c9a", "new": "f4030daa",
+         "label": "[P8c] himax_int_en_set: force x20=x13=0x2008 (IRQF_TRIGGER_LOW)"},
+        {"offset": 0x23d9c, "old": "94018b9a", "new": "f4030caa",
+         "label": "[P8d] himax_ts_register_interrupt: force x20=x12=0x2008 (IRQF_TRIGGER_LOW)"},
+        {"offset": 0x08dfc, "old": "95018b9a", "new": "f5030caa",
+         "label": "[P8e] himax_int_en_write: force x21=x12=0x2008 (IRQF_TRIGGER_LOW)"},
+
+        # P9: NOP cbz w8 to eliminate p_point_num desync in himax_report_data
+        # Ensures unconditional slot release & BTN_TOUCH=0 whenever all fingers are lifted
+        {"offset": 0x038b8, "old": "480d0034", "new": "1f2003d5",
+         "label": "[P9] himax_report_data: NOP cbz w8 to guarantee unconditional slot release"},
     ],
 
     # Hooks encoded from independent binary analysis

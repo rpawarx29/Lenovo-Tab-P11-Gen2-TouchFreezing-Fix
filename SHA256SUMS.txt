@@ -1,9 +1,9 @@
-# Himax TB350XU Final Combined Candidate
-# Built: 2026-11-05T16:03:52.868991
-# Variant: highsense + all recovery fixes
-# Status: EXPERIMENTAL - NOT HARDWARE TESTED
+# Himax TB350XU Final Combined Candidate v4 (Typing Freeze Fixed)
+# Built: 2026-11-05T21:52:17
+# Variant: highsense + all recovery fixes + typing freeze fix (Level-Triggered IRQ + Slot Desync Fix)
 
-24fe1068b0b46a15480521a1df810ed23db55091371524264842a79064a2cfc6  vendor_boot.img (ORIGINAL BASELINE)
+24fe1068b0b46a15480521a1df810ed23db55091371524264842a79064a2cfc6  vendor_boot.img (ORIGINAL STOCK BASELINE)
 e9dc21ba90f42c0a136140c6e8e2838608146d6e20323c21ff237650349a1827  himax_mmi.original.ko
-578947e47d092541e7280aef4e8bee1fea27c494384ef361726468997ff08ed3  himax_mmi.combined_final.ko
-412e641e85029a6f5f352ecc8c1486ef0f8cc0c2a5e14dc296e16072a0dc0dac  vendor_boot_himax_combined_final_candidate.img
+a8821965ecfb9a51556f1ea29ef58b1b5e6380d1f8b312feaf618da05c7c1a90  himax_mmi.combined_final.ko
+20e7dba91284e7106da7a7aa7b5762fa1b6f582d9c68db50beccf984cd1ec2bb  vendor_boot_TB350XU_v4_typing_freeze_fixed.img
+20e7dba91284e7106da7a7aa7b5762fa1b6f582d9c68db50beccf984cd1ec2bb  vendor_boot_himax_combined_final_candidate.img

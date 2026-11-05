@@ -99,9 +99,9 @@ Our reverse-engineering audit of `himax_mmi.ko` (`5.10.136-android12-9-gf16efe7b
 
 ---
 
-## 4. The 7 Kernel Binary Patches
+## 4. The 13 Kernel Binary Patches
 
-We implemented 7 surgical ARM64 binary patches in `himax_mmi.ko` without altering external symbols, CFI jump tables, or module vermagic:
+We implemented 13 surgical ARM64 binary patches in `himax_mmi.ko` without altering external symbols, CFI jump tables, or module vermagic:
 
 | Patch ID | Function Target | File / Text Offset | Original Opcode | Patched Opcode | Semantics |
 |---|---|---|---|---|---|
@@ -112,6 +112,12 @@ We implemented 7 surgical ARM64 binary patches in `himax_mmi.ko` without alterin
 | **[P5]** | `himax_ts_work` (exception) | `0x04BCC` | `08000090` (`adrp x8, 0`) | `cb7f0014` (`b Hook4`) | Calls `himax_release_all_finger()` before exception recovery |
 | **[P6]** | `fp_set_prevent_notch` | `0x04CC0` | `00f10091` (`add x0, x8, #0x3c`) | `00310191` (`add x0, x8, #0x4c`) | Fixes buffer pointer to `ts->cmd_param_buf` |
 | **[P7]** | `himax_mcu_resend_cmd_func` | `0x1A61C` | `09000090` (`adrp x9, 0`) | `3b290014` (`b Hook5`) | Automatically enables HSEN mode (`0xA55AA55A`) on resume/sync |
+| **[P8a]** | `himax_mcu_read_ic_trigger_type` | `0x164C8` | `00010012` (`and w0, w8, #1`) | `e0031f2a` (`mov w0, wzr`) | Force return 0 to trigger active-low level selection |
+| **[P8b]** | `himax_int_register_trigger` | `0x23C40` | `b4018c9a` (`csel x20, x13, x12, eq`) | `f4030daa` (`mov x20, x13`) | Force `x20 = 0x2008` (`IRQF_TRIGGER_LOW \| IRQF_ONESHOT`) |
+| **[P8c]** | `himax_int_en_set` | `0x23CD0` | `b4018c9a` (`csel x20, x13, x12, eq`) | `f4030daa` (`mov x20, x13`) | Force `x20 = 0x2008` (`IRQF_TRIGGER_LOW \| IRQF_ONESHOT`) |
+| **[P8d]** | `himax_ts_register_interrupt` | `0x23D9C` | `94018b9a` (`csel x20, x12, x11, eq`) | `f4030caa` (`mov x20, x12`) | Force `x20 = 0x2008` (`IRQF_TRIGGER_LOW \| IRQF_ONESHOT`) |
+| **[P8e]** | `himax_int_en_write` | `0x08DFC` | `95018b9a` (`csel x21, x12, x11, eq`) | `f5030caa` (`mov x21, x12`) | Force `x21 = 0x2008` (`IRQF_TRIGGER_LOW \| IRQF_ONESHOT`) |
+| **[P9]** | `himax_report_data` | `0x038B8` | `480d0034` (`cbz w8, #0x3a60`) | `1f2003d5` (`nop`) | Unconditional slot release & `BTN_TOUCH = 0` on finger lift |
 
 ---
 
@@ -136,7 +142,7 @@ Earlier experimental candidate builds caused an immediate bootloop / kernel pani
 * **Stock `vendor_boot.img` SHA-256:**  
   `24fe1068b0b46a15480521a1df810ed23db55091371524264842a79064a2cfc6`
 * **Patched `vendor_boot_himax_combined_final_candidate.img` SHA-256:**  
-  `412e641e85029a6f5f352ecc8c1486ef0f8cc0c2a5e14dc296e16072a0dc0dac`
+  `20e7dba91284e7106da7a7aa7b5762fa1b6f582d9c68db50beccf984cd1ec2bb`
 * **Partition Size:** Exactly `67,108,864 bytes` (64.0 MB)
 
 ---
