@@ -38,8 +38,9 @@ This repository provides:
 ## 1. The Problem: Why Does Lenovo Touch Freeze?
 
 Thousands of Lenovo Tab P11 Gen 2 owners experience severe touchscreen degradation:
+* **The "Frezzing:** This can be temporary be fixed by POWER ON and OFF Button
 * **The "Finger Freeze while Stylus Works" Bug:** Suddenly, all finger taps, swipes, and multitouch gestures stop responding completely. However, if you bring the **Lenovo Precision Pen 2** close to the screen, the stylus draws and clicks normally!
-* **Terrible Light-Touch Sensitivity:** Tapping lightly with fingertips or interacting near the edges/corners frequently fails to register unless firm pressure is applied, especially with glass screen protectors installed.
+* **Terrible Light-Touch Sensitivity:** Tapping lightly with fingertips or the typing is almost difficult or interacting near the edges/corners frequently fails to register unless firm pressure is applied, especially with glass screen protectors installed.
 * **USB Cable "Magic Fix":** Users discovered that plugging in or unplugging the USB charger temporarily resurrected touch for a short time.
 
 ---
