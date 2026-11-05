@@ -23,7 +23,7 @@ This repository provides:
 - [1. The Problem: Why Does Lenovo Touch Freeze?](#1-the-problem-why-does-lenovo-touch-freeze)
 - [2. The 6-7 Month Mystery & Service Center Futility](#2-the-6-7-month-mystery--service-center-futility)
 - [3. Deep Forensic Root Cause Analysis](#3-deep-forensic-root-cause-analysis)
-- [4. The 7 Kernel Binary Patches](#4-the-7-kernel-binary-patches)
+- [4. The 13 Kernel Binary Patches](#4-the-13-kernel-binary-patches)
 - [5. Bootloop Root Cause & Exact Mathematical Relocation Fix](#5-bootloop-root-cause--exact-mathematical-relocation-fix)
 - [6. Device & Firmware Specifications](#6-device--firmware-specifications)
 - [7. Step-by-Step Bootloader Unlocking Guide](#7-step-by-step-bootloader-unlocking-guide)
@@ -38,9 +38,9 @@ This repository provides:
 ## 1. The Problem: Why Does Lenovo Touch Freeze?
 
 Thousands of Lenovo Tab P11 Gen 2 owners experience severe touchscreen degradation:
-* **The "Frezzing":** This can be temporary be fixed by POWER ON and OFF Button
+* **The "Freezing" & Typing Lockup:** Touch randomly dies during rapid typing or multitasking; temporarily recovered only by screen OFF/ON power button toggling or USB cable connection.
 * **The "Finger Freeze while Stylus Works" Bug:** Suddenly, all finger taps, swipes, and multitouch gestures stop responding completely. However, if you bring the **Lenovo Precision Pen 2** close to the screen, the stylus draws and clicks normally!
-* **Terrible Light-Touch Sensitivity:** Tapping lightly with fingertips or the typing is almost difficult or interacting near the edges/corners frequently fails to register unless firm pressure is applied, especially with glass screen protectors installed.
+* **Terrible Light-Touch Sensitivity:** Tapping lightly with fingertips or typing is difficult, and interacting near edges/corners frequently fails to register unless firm pressure is applied, especially with tempered glass screen protectors installed.
 * **USB Cable "Magic Fix":** Users discovered that plugging in or unplugging the USB charger temporarily resurrected touch for a short time.
 
 ---
@@ -270,11 +270,12 @@ The original factory baseline image (`vendor_boot.img`, SHA-256: `24fe1068...`) 
 
 ## 11. Repository Structure & Building from Scratch
 
-```
+```text
 ├── README.md                                # Master documentation (this file)
 ├── SHA256SUMS.txt                           # Cryptographic hashes of all components
 ├── docs/                                    # Forensic analysis & engineering reports
-│   ├── ALL_VERIFIED_BUGS.md                 # Detailed breakdown of all 8 discovered flaws
+│   ├── ALL_VERIFIED_BUGS.md                 # Detailed breakdown of all 10 discovered flaws
+│   ├── EXHAUSTIVE_BINARY_AUDIT_AND_FREEZE_SOLUTION.md # Complete 333-function binary audit & typing freeze fix
 │   ├── FULL_BINARY_AUDIT.md                 # Reverse-engineering disassembly audit
 │   ├── COMPLETE_DRIVER_FUNCTION_MAP.md      # Function-by-function architecture map
 │   ├── SENSITIVITY_RESEARCH_AND_TUNING.md   # Hardware HSEN register analysis
@@ -297,7 +298,7 @@ To rebuild the patched `vendor_boot` from stock `vendor_boot.img` on Windows:
 cd tools
 BUILD_FINAL.cmd
 ```
-The script extracts the stock ramdisk, applies all 7 ARM64 patches, corrects the 5 relocation offsets, recalculates AVB descriptors, and outputs a bit-exact verified candidate image.
+The script extracts the stock ramdisk, applies all 13 ARM64 patches, corrects the 5 relocation offsets, recalculates AVB descriptors, and outputs a bit-exact verified candidate image.
 
 ---
 

@@ -17,6 +17,8 @@
 | **BUG-06** | Stylus-Priority / Palm Rejection Finger Suppression | Packet Parser & Controller FW | **Confirmed Functional Defect** | Analyzed & Mitigated |
 | **BUG-07** | Charger Framework Global Symbol Width Mismatch | `tp_usb_plug_status` | **Verified Benign Mismatch** | Verified Safe (No Overwrite) |
 | **BUG-08** | Multi-Packet SPI Mutex Granularity Gap | `himax_bus_read` / `himax_ts_work` | **Architectural Weakness** | Documented & Preserved |
+| **BUG-09** | Falling-Edge Interrupt Deadlock During Fast Typing | `.text + 0x164C8`, `0x23C40`, `0x23CD0`, `0x23D9C`, `0x08DFC` | **Confirmed Critical Defect** | Corrected via [P8a-e] |
+| **BUG-10** | Contact Release & Slot Clearing Suppression on Finger Lift | `.text + 0x038B8` | **Confirmed Critical Defect** | Corrected via [P9] |
 
 ---
 
@@ -115,3 +117,29 @@
   In `himax_mmi.ko`, `tp_usb_plug_status` is declared as a 1-byte unsigned char (`.bss + 0x04`).
 - **Finding:**
   In the BSS section layout of `himax_mmi.ko`, `tp_usb_plug_status` is at offset `0x04`. The next symbol, `private_ts`, begins at offset `0x08`. Bytes `0x05, 0x06, 0x07` are natural padding for 64-bit alignment. Therefore, the 32-bit store does **not** corrupt `private_ts` or any adjacent object in this specific compiled binary. It is benign on this kernel build and excluded from binary modification.
+
+---
+
+### BUG-09: Falling-Edge Interrupt Deadlock During Fast Typing
+- **Location:** `.text + 0x164C8`, `0x23C40`, `0x23CD0`, `0x23D9C`, `0x08DFC`
+- **Root Cause:**
+  The Himax controller firmware reports `trigger_type = 1`. In response, the driver configures the Linux MTK EINT interrupt with `IRQF_TRIGGER_FALLING | IRQF_ONESHOT` (`0x2002`). When typing quickly with two thumbs, Packet 2 arrives while Packet 1 is being read over SPI. The Himax IC holds the INT GPIO pin LOW. When the kernel thread returns `IRQ_HANDLED` and unmasks the interrupt, because the pin is **already LOW**, no 1-to-0 falling edge occurs. The Linux interrupt controller starves indefinitely.
+- **Consequence:**
+  Touch freezes completely during rapid typing or multi-touch bursts. Only toggling the screen power button or plugging in a USB cable resets the INT pin.
+- **Patch Resolution:**
+  - `[P8a-e]` force active-low level-triggered IRQ (`IRQF_TRIGGER_LOW | IRQF_ONESHOT`, `0x2008`) across all 5 register sites in the driver binary. As long as touch packets remain queued in the IC FIFO (INT pin held LOW), the Linux GIC continuously invokes the worker thread until every packet is emptied.
+
+---
+
+### BUG-10: Contact Release & Slot Clearing Suppression on Finger Lift
+- **Location:** `himax_report_data` (`.text + 0x038B8`)
+- **Root Cause:**
+  When all fingers lift, `finger_num == 0`. At `0x038B8`, the code executed:
+  ```arm64
+  0x038b8: cbz w8, #0x3a60    ; if p_point_num == 0, branch to end (skipping slot release!)
+  ```
+  If `p_point_num` desynced and became 0, the driver completely bypassed `input_mt_slot()`, `input_mt_report_slot_state(slot, false)`, and `input_report_key(ts->input_dev, BTN_TOUCH, 0)`.
+- **Consequence:**
+  Android's InputFlinger retained active touches in memory, causing ghost touches, stuck keys, and tap unresponsiveness.
+- **Patch Resolution:**
+  - `[P9]` replaces `cbz w8, #0x3a60` with `nop` (`1f2003d5`). Multi-touch slot clearing and `BTN_TOUCH = 0` are unconditionally dispatched on every finger release.
