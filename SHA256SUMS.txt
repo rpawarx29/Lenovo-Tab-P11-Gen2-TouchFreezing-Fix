@@ -1,0 +1,9 @@
+# Himax TB350XU Final Combined Candidate
+# Built: 2026-11-05T16:03:52.868991
+# Variant: highsense + all recovery fixes
+# Status: EXPERIMENTAL - NOT HARDWARE TESTED
+
+24fe1068b0b46a15480521a1df810ed23db55091371524264842a79064a2cfc6  vendor_boot.img (ORIGINAL BASELINE)
+e9dc21ba90f42c0a136140c6e8e2838608146d6e20323c21ff237650349a1827  himax_mmi.original.ko
+578947e47d092541e7280aef4e8bee1fea27c494384ef361726468997ff08ed3  himax_mmi.combined_final.ko
+412e641e85029a6f5f352ecc8c1486ef0f8cc0c2a5e14dc296e16072a0dc0dac  vendor_boot_himax_combined_final_candidate.img
