@@ -1,0 +1,6 @@
+id=p11_g99_performance_oc
+name=Helio G99 Extreme Overclock & Adaptive Performance
+version=v1.0
+versionCode=100
+author=Antigravity
+description=Overclocks Helio G99 (MT6789): CPU 2.2GHz/2.0GHz, Mali-G57 1.1GHz, GED GPU Boost, Schedutil 0us latency, VM cache optimizations with smart standby battery saver.

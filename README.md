@@ -1,22 +1,21 @@
-# Lenovo Tab P11 Gen 2 (TB350XU / TB350FU) Touchscreen Subsystem Fix & High-Sensitivity Mod
+# Lenovo Tab P11 Gen 2 (TB350XU / TB350FU) Touchscreen Subsystem Fix, High-Sensitivity Mod & Extreme Overclock
 
 [![Device](https://img.shields.io/badge/Device-Lenovo%20Tab%20P11%20Gen%202%20(TB350XU)-blue.svg)](https://www.lenovo.com/)
 [![SoC](https://img.shields.io/badge/SoC-MediaTek%20Helio%20G99%20(MT6789)-orange.svg)]()
-[![Kernel](https://img.shields.io/badge/Kernel-5.10.136--android12--9--gf16efe7b9174-green.svg)]()
+[![ROM Version](https://img.shields.io/badge/ROM-Android%2014%20(S231018)-red.svg)]()
+[![Kernel](https://img.shields.io/badge/Kernel-5.10.233--android12--9-green.svg)]()
 [![Touch IC](https://img.shields.io/badge/Touch%20IC-Himax%20HX83102J-red.svg)]()
 [![Target Partition](https://img.shields.io/badge/Partition-vendor__boot-purple.svg)]()
 [![Status](https://img.shields.io/badge/Hardware%20Status-Verified%20Working%20on%20Device-success.svg)]()
 
-A comprehensive, mathematically verified kernel driver remediation and hardware high-sensitivity enhancement for the **Lenovo Tab P11 Gen 2 (TB350XU / TB350FU)**.
+A comprehensive, mathematically verified kernel driver remediation, hardware high-sensitivity enhancement, and system-level touch/display optimization for the **Lenovo Tab P11 Gen 2 (TB350XU / TB350FU)**.
 
 This repository provides:
-1. **The Definitive Fix (Candidate v4)** for the infamous bug where **finger touch freezes completely while the active stylus (Lenovo Precision Pen 2) continues working**.
-2. **Rapid Typing Freeze & Edge IRQ Deadlock Resolution:** Complete elimination of fast two-thumb keyboard freezes via Level-Triggered Interrupts (`0x2008`) and unconditional multi-touch slot clearing.
-3. **Permanent Hardware High-Sensitivity Mode (HSEN)** activation on every boot, wake, and settings resend, eliminating light-touch drops and edge/corner unresponsiveness.
-4. **100% Complete Binary Audit:** Exhaustive audit across all 333 driver functions, all 55 spinlocks/mutexes, and all 35 delays in `himax_mmi.ko` with zero deadlock or bootloop risk.
-5. **Step-by-step Bootloader Unlocking Guide** based on real hardware quirks (including the Volume Down confirmation quirk).
-6. **Complete KernelSU & Play Integrity Guide** (ZygiskNext + Always Strong + nomount for WhatsApp & banking compatibility).
-7. **In-depth Binary Reverse-Engineering Forensics & Automated Build Scripts**.
+1. **The Definitive Fix (Candidate v6)** for the official Android 14 (`S231018`) update, enforcing strict Linux Multi-Touch Type-B protocol ordering and eliminating missed keyboard pop-ups and typing freezes.
+2. **Missing Touch Input Device Configuration (`.idc`) Injection:** Injects `/system/usr/idc/himax-touchscreen.idc` to provide physical pressure calibration, direct touchscreen mapping, and level-1 precision filtering.
+3. **MediaTek `fpsgo` Throttling Bypass:** Overrides MediaTek's internal frame governor to eliminate micro-stutters and artificial frame drops.
+4. **120Hz Constant High-Refresh Rate Lock:** Eliminates the 60Hz->120Hz display wake latency that drops initial touch ripples.
+5. **Adaptive Overclock Magisk Module:** High-performance CPU (1.8GHz–2.0GHz) and GPU (1.10GHz max) scaling with automatic DRM DPMS screen-off cooling.
 
 ---
 
@@ -303,6 +302,26 @@ cd tools
 BUILD_FINAL.cmd
 ```
 The script extracts the stock ramdisk, applies all 13 ARM64 patches, corrects the 5 relocation offsets, recalculates AVB descriptors, and outputs a bit-exact verified candidate image.
+
+---
+
+## 11.1 Candidate v6 (Official Android 14 S231018 Fix) & Magisk Overclock
+
+In the official Lenovo Android 14 update (`TB350XU_USER_S231018`), two new critical issues surfaced:
+1. **Linux MT Type-B Slot Order Violation:** In `himax_mmi.ko`, coordinate events were reported before `input_mt_report_slot_state`, causing Android's `InputReader` to drop touch bursts with:
+   ```text
+   InputReader: Received unexpected event for slot 0
+   ```
+   **Fix:** Binary patched `0x0360c`–`0x03628` to emit slot state first, and zeroed stale relocation entry at `0x0360c` (`R_AARCH64_NONE`) to eliminate a null pointer dereference (`x0 = 0`) crash.
+2. **Missing `.idc` Touch Configuration:** Lenovo omitted any `.idc` file in `/vendor/usr/idc/` for `himax-touchscreen`. Android defaulted to uncalibrated fallback mode.
+3. **MediaTek `fpsgo` Thermal Frame Drops:** MediaTek's frame daemon throttled rendering threads during warm operation.
+4. **Dynamic Refresh Jitter:** Display dropped to 60Hz/30Hz when idle, taking 8-16ms to wake to 120Hz upon touch.
+
+### Magisk Module Architecture (`magisk_module/`)
+* **Touch IDC:** Injected `/system/usr/idc/himax-touchscreen.idc` with physical pressure calibration and level-1 motion filtering.
+* **fpsgo Bypass:** `thrm_enable = 0`, `enable_switch_down_throttle = 0`, `boost_ta = 1`.
+* **120Hz Lock:** `min_refresh_rate = 120.0`, `peak_refresh_rate = 120.0`.
+* **Adaptive Daemon:** Clocks ramp to 1.8GHz–2.0GHz on screen wake, dropping to 500MHz/725MHz on screen lock via DRM DPMS to prevent battery drain.
 
 ---
 

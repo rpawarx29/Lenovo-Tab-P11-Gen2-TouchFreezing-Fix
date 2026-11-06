@@ -4,6 +4,17 @@
 
 ---
 
+## [v6.0 Definitive Touch Protocol & System Optimization] - 2026-11-06
+### Added & Solved
+- **Linux Multi-Touch Type-B Protocol Fix (`himax_mmi.ko`):** In stock Android 14 (`S231018`), coordinate events were dispatched before `input_mt_report_slot_state`, causing Android `InputReader` to drop touch events with `Received unexpected event for slot 0`. Relocated `input_mt_report_slot_state` before coordinate reporting at `0x0360c`–`0x03628`.
+- **Relocation Table (`.rela.text`) Zeroing:** Zeroed stale `R_AARCH64_LD64_GOT_LO12_NC` relocation entry at `0x0360c` to `R_AARCH64_NONE`, permanently fixing the null pointer dereference (`x0 = 0`) touch crash.
+- **Touch Input Device Configuration (`.idc`) Injection:** Discovered that the stock ROM lacked any `.idc` file for `himax-touchscreen`. Injected `/system/usr/idc/himax-touchscreen.idc` via Magisk overlay with physical pressure calibration and level-1 precision filtering, completely eliminating key-ripple animation drops during rapid typing.
+- **MediaTek `fpsgo` Frame Throttling Bypass:** Overrode thermal down-throttling (`thrm_enable=0`, `enable_switch_down_throttle=0`, `enable_ceiling=0`, `boost_ta=1`), eliminating micro-stutters and artificial frame drops.
+- **120Hz High-Refresh Rate Lock:** Forced `min_refresh_rate = 120.0` and `peak_refresh_rate = 120.0`, eliminating the 60Hz->120Hz display wake latency that previously dropped first-touch keyboard ripples.
+- **Adaptive Overclock Module (`p11_g99_performance_oc`):** Overclocks CPU LITTLE (1.5–2.0GHz) and BIG (1.7–2.2GHz) with 0us EAS ramp-up, Mali-G57 GPU unlocked to 1.10GHz max, while dynamically dropping to 500MHz/725MHz on screen lock via DRM DPMS to protect battery and prevent overheating.
+
+---
+
 ## [v4.0 Final Stable - Typing Freeze & Edge IRQ Deadlock Resolution] - 2026-11-05
 ### Added
 - **100% Exhaustive Binary Audit:** Audited all 333 functions in `himax_mmi.ko`, all 55 spinlock/mutex synchronization call sites, and all 35 delay/sleep functions. Zero deadlock vulnerabilities found.

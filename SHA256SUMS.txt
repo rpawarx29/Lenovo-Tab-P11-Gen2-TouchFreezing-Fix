@@ -7,3 +7,9 @@ e9dc21ba90f42c0a136140c6e8e2838608146d6e20323c21ff237650349a1827  himax_mmi.orig
 a8821965ecfb9a51556f1ea29ef58b1b5e6380d1f8b312feaf618da05c7c1a90  himax_mmi.combined_final.ko
 20e7dba91284e7106da7a7aa7b5762fa1b6f582d9c68db50beccf984cd1ec2bb  vendor_boot_TB350XU_v4_typing_freeze_fixed.img
 20e7dba91284e7106da7a7aa7b5762fa1b6f582d9c68db50beccf984cd1ec2bb  vendor_boot_himax_combined_final_candidate.img
+
+# Candidate v6: Official Android 14 (S231018) Linux MT Type-B Protocol Fix
+cce9ec0d3bb0827acde5044569949cf0a59e3ab844c0eb9448950852b8d92598  vendor_boot_TB350XU_S231018_v6_touch_protocol_fix.img
+
+# Magisk Overclock, 120Hz Lock, fpsgo Bypass & Touch IDC Calibration Module v1.0
+a50e278980ef94096a386e6a2dacf949c48edc4bd0920c25e05500678bf17caa  HelioG99_Overclock_Adaptive_v1.0.zip
