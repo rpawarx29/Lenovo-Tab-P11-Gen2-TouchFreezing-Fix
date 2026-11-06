@@ -4,7 +4,21 @@
 **Firmware Version:** Android 14 (`TB350XU_USER_S231018_2601050930_MP_ROW`)  
 **Kernel:** Linux 5.10.233-android12-9-00001-g3d8ea7147b4b-ab12869156  
 **Root Status:** Magisk v31.1 installed and verified  
-**Date & Revision:** November 2026 / Rev 1.1  
+**Date & Revision:** November 2026 / Rev 1.2  
+
+---
+
+> [!IMPORTANT]
+> ### CRITICAL ARCHITECTURAL FINDING: DUAL FULL-STACK DEPENDENCY
+> Real hardware testing conclusively confirmed that the touchscreen typing freezes, missed keyboard ripple animations ("halka sa light nahi aana"), and input lag are **ONLY** completely cured when **BOTH** components are active together:
+> 1. **Kernel Driver Patch (Candidate v6 in `vendor_boot.img`):** Corrects the Linux Multi-Touch Type-B protocol packet sequence in `himax_mmi.ko` (`input_mt_report_slot_state` before coordinates at `0x0360c`–`0x03628`).
+> 2. **Magisk Performance, Touch IDC & Display Suite (`p11_g99_performance_oc`):**
+>    - **Missing Touch `.idc` Fix:** Injects `/system/usr/idc/himax-touchscreen.idc` to provide Android's `InputReader` with physical pressure calibration and level-1 precision filtering (which was completely missing in the stock ROM, causing uncalibrated touch drops).
+>    - **High Unlocked Overclock Mode:** CPU min clocks locked to 1.5–1.7GHz (preventing 500MHz drops during typing bursts) and 0us EAS ramp-up.
+>    - **MediaTek `fpsgo` Thermal Bypass:** Eliminates frame down-throttling (`thrm_enable=0`, `boost_ta=1`).
+>    - **120Hz Constant Lock:** Keeps display locked at 120Hz constantly to avoid the 8–16ms dynamic display wake delay upon first tap.
+>
+> **Warning:** If running the kernel fix alone without the overclock/IDC module, or running the module on the stock unpatched kernel driver, the typing drops and unresponsiveness **RETURN**. Both layers must be active simultaneously!
 
 ---
 

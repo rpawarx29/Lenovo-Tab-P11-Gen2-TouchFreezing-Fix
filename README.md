@@ -202,6 +202,19 @@ It must return: `unlocked: yes`.
 
 ### 8.1 Official Android 14 (S231018) Candidate v6 Installation Guide
 
+> [!CAUTION]
+> **MANDATORY FULL-STACK REQUIREMENT (Verified on Real Hardware):**
+> Comprehensive hardware testing conclusively confirms that the touch typing freezes, missing keyboard touch ripple lights ("halka sa light"), and input drops are **ONLY** completely eliminated when **BOTH** layers are active simultaneously:
+> 1. **Candidate v6 Kernel Driver (`vendor_boot.img`):** Corrects the Linux Multi-Touch Type-B protocol event sequence in `himax_mmi.ko` (`input_mt_report_slot_state` before coordinates).
+> 2. **Magisk Optimizer Suite (`HelioG99_Overclock_Adaptive_v1.0.zip`):**
+>    - **The Missing `.idc` Fix:** Injects `/system/usr/idc/himax-touchscreen.idc` for calibrated physical pressure and level-1 precision filtering.
+>    - **High Unlocked Overclock Mode:** CPU min clocks locked to 1.5–1.7GHz (preventing 500MHz drops during typing bursts) and 0us EAS ramp-up.
+>    - **MediaTek `fpsgo` Frame Bypass:** Eliminates frame down-throttling (`thrm_enable=0`, `boost_ta=1`).
+>    - **120Hz Constant Lock:** Keeps display locked at 120Hz constantly to avoid the 8–16ms dynamic display wake delay upon first tap.
+>
+> *Flashing the kernel driver alone without the module, or installing the module on an unpatched kernel, leaves touch drops unresolved. Both components must be installed together.*
+
+
 > [!TIP]
 > Download the ready-to-flash binaries from the official [**GitHub Releases v6.0.0**](https://github.com/rpawarx29/Lenovo-Tab-P11-Gen2-TouchFreezing-Fix/releases/tag/v6.0.0).
 
