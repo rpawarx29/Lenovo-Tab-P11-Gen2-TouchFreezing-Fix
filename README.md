@@ -6,6 +6,7 @@
 [![Kernel](https://img.shields.io/badge/Kernel-5.10.233--android12--9-green.svg)]()
 [![Touch IC](https://img.shields.io/badge/Touch%20IC-Himax%20HX83102J-red.svg)]()
 [![Target Partition](https://img.shields.io/badge/Partition-vendor__boot-purple.svg)]()
+[![GitHub Release](https://img.shields.io/github/v/release/rpawarx29/Lenovo-Tab-P11-Gen2-TouchFreezing-Fix?color=blue&label=Latest%20Release)](https://github.com/rpawarx29/Lenovo-Tab-P11-Gen2-TouchFreezing-Fix/releases/tag/v6.0.0)
 [![Status](https://img.shields.io/badge/Hardware%20Status-Verified%20Working%20on%20Device-success.svg)]()
 
 A comprehensive, mathematically verified kernel driver remediation, hardware high-sensitivity enhancement, and system-level touch/display optimization for the **Lenovo Tab P11 Gen 2 (TB350XU / TB350FU)**.
@@ -198,6 +199,35 @@ It must return: `unlocked: yes`.
 ---
 
 ## 8. Flashing the Touch Fix
+
+### 8.1 Official Android 14 (S231018) Candidate v6 Installation Guide
+
+> [!TIP]
+> Download the ready-to-flash binaries from the official [**GitHub Releases v6.0.0**](https://github.com/rpawarx29/Lenovo-Tab-P11-Gen2-TouchFreezing-Fix/releases/tag/v6.0.0).
+
+#### Step 1: Flash the Kernel Touch Fix (`vendor_boot.img`)
+1. Download `vendor_boot_TB350XU_S231018_v6_touch_protocol_fix.img` and `FLASH_S231018_TOUCH_V6.cmd`.
+2. Connect tablet via USB and reboot into Fastboot Mode:
+   ```cmd
+   adb reboot bootloader
+   ```
+3. Run `FLASH_S231018_TOUCH_V6.cmd` or flash via fastboot:
+   ```cmd
+   fastboot flash vendor_boot_a vendor_boot_TB350XU_S231018_v6_touch_protocol_fix.img
+   fastboot flash vendor_boot_b vendor_boot_TB350XU_S231018_v6_touch_protocol_fix.img
+   fastboot reboot
+   ```
+
+#### Step 2: Install Magisk Performance & Touch Calibration Module
+1. Download `HelioG99_Overclock_Adaptive_v1.0.zip` and transfer it to the tablet.
+2. Open the **Magisk App** -> Navigate to **Modules** -> Tap **Install from storage**.
+3. Select `HelioG99_Overclock_Adaptive_v1.0.zip`.
+4. Reboot the tablet.
+
+This completes the multi-layer touch protocol fix, `.idc` calibrated pressure mapping, 120Hz display lock, and MediaTek `fpsgo` unthrottling!
+
+---
+
 
 You can flash the patched `vendor_boot` immediately while still in Fastboot mode (no need to reboot first):
 
