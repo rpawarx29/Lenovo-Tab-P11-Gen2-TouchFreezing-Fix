@@ -327,6 +327,9 @@ In the official Lenovo Android 14 update (`TB350XU_USER_S231018`), two new criti
 
 ## 12. Credits & Disclaimers
 
-* **Project Lead & Reverse Engineering:** **Ruturaj (@rpawarx29)**
-* **Technical Assistance:** Developed with the engineering and binary forensics assistance of Antigravity AI (Google DeepMind).
-* **Disclaimer:** This mod is provided for educational and repair purposes. Modifying kernel partitions requires an unlocked bootloader. Always maintain backups. Neither Lenovo nor the authors are responsible for any device damage resulting from misuse.
+### Author & Research
+* **Lead Researcher & Maintainer:** 
+_pawarx (Ruturaj Pawar)
+* **Telegram Contact:** [@ocean_mystic](https://t.me/ocean_mystic)
+* **Community:** Lenovo Tab P11 Gen 2 / Pro User Community
+
