@@ -1,15 +1,8 @@
-# Himax TB350XU Final Combined Candidate v4 (Typing Freeze Fixed)
-# Built: 2026-11-05T21:52:17
-# Variant: highsense + all recovery fixes + typing freeze fix (Level-Triggered IRQ + Slot Desync Fix)
+# Lenovo Tab P11 Gen 2 (TB350XU / TB350FU) - SHA256 Checksums
+# Official Release: v5.2.0 (Android 14 S231018)
 
-24fe1068b0b46a15480521a1df810ed23db55091371524264842a79064a2cfc6  vendor_boot.img (ORIGINAL STOCK BASELINE)
-e9dc21ba90f42c0a136140c6e8e2838608146d6e20323c21ff237650349a1827  himax_mmi.original.ko
-a8821965ecfb9a51556f1ea29ef58b1b5e6380d1f8b312feaf618da05c7c1a90  himax_mmi.combined_final.ko
-20e7dba91284e7106da7a7aa7b5762fa1b6f582d9c68db50beccf984cd1ec2bb  vendor_boot_TB350XU_v4_typing_freeze_fixed.img
-20e7dba91284e7106da7a7aa7b5762fa1b6f582d9c68db50beccf984cd1ec2bb  vendor_boot_himax_combined_final_candidate.img
-
-# Candidate v6: Official Android 14 (S231018) Linux MT Type-B Protocol Fix
-cce9ec0d3bb0827acde5044569949cf0a59e3ab844c0eb9448950852b8d92598  vendor_boot_TB350XU_S231018_v6_touch_protocol_fix.img
-
-# Magisk Overclock, 120Hz Lock, fpsgo Bypass & Touch IDC Calibration Module v1.0
-a50e278980ef94096a386e6a2dacf949c48edc4bd0920c25e05500678bf17caa  HelioG99_Overclock_Adaptive_v1.0.zip
+c55dc35d69ff64901f00b1438f99c9c73d5774f03b8fa342a00d88395870e354  vendor_boot_TB350XU_S231018_v5.2_high_sensitivity.img
+88a1d8e1c7ea31f6895a4695cb3067af0e59b5bec7115ead1f2ec2f85f2bbcd0  FLASH_TOUCH_V5.2.cmd
+f95560ab33744fe4cdc38487cfbcc6e5ba29e9a2ed86482f2ba054565b4afddd  HelioG99_Overclock_Adaptive_v1.0.zip
+9cb01baac328c597898e0b047f8d3aa1d559d40d095d7973173491444aa05eb9  AlwaysStrong-v1.0.5-inject.zip
+fca7140047041425c7652476385ebdd37e8d2d7ce881b88aa462ad9798c16e79  HMA-OSS-ZYGISK-future-5398de45-release.zip
