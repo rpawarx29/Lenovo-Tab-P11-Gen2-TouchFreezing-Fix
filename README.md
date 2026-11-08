@@ -1,12 +1,12 @@
 # Lenovo Tab P11 Gen 2 (TB350XU / TB350FU)
-## Official Android 14 (S231018) Pristine Multi-Touch Fix & Zero-Latency Performance Suite (v6.0.0)
+## Android 14 (S231018) Pristine Multi-Touch Fix & Zero-Latency Performance Suite (v6.0.0)
 
 [![Release](https://img.shields.io/badge/Release-v6.0.0-brightgreen.svg)](https://github.com/rpawarx29/Lenovo-Tab-P11-Gen2-TouchFreezing-Fix/releases/tag/v6.0.0)
 [![Firmware](https://img.shields.io/badge/Firmware-Android%2014%20(S231018)-blue.svg)](https://github.com/rpawarx29/Lenovo-Tab-P11-Gen2-TouchFreezing-Fix)
 [![Hardware](https://img.shields.io/badge/Chipset-MediaTek%20Helio%20G99%20(MT6789)-orange.svg)](https://github.com/rpawarx29/Lenovo-Tab-P11-Gen2-TouchFreezing-Fix)
 [![License](https://img.shields.io/badge/License-GPL%202.0-yellow.svg)](LICENSE)
 
-The definitive, hardware-verified solution for the **Lenovo Tab P11 Gen 2** touch unresponsiveness, typing freezing, dropped keystrokes, delayed toggles, sticky touch releases, and slide-to-click misclassifications on official **Android 14 (S231018)** firmware.
+The definitive, hardware-verified solution for the **Lenovo Tab P11 Gen 2** touch unresponsiveness, typing freezing, dropped keystrokes, delayed toggles, sticky touch releases, and slide-to-click misclassifications for **Android 14 (S231018)** firmware.
 
 ---
 
