@@ -1,8 +1,8 @@
 # Lenovo Tab P11 Gen 2 (TB350XU / TB350FU) - SHA256 Checksums
-# Official Release: v5.2.0 (Android 14 S231018)
+# Official Release: v6.0.0 (Android 14 S231018)
 
-c55dc35d69ff64901f00b1438f99c9c73d5774f03b8fa342a00d88395870e354  vendor_boot_TB350XU_S231018_v5.2_high_sensitivity.img
-88a1d8e1c7ea31f6895a4695cb3067af0e59b5bec7115ead1f2ec2f85f2bbcd0  FLASH_TOUCH_V5.2.cmd
-f95560ab33744fe4cdc38487cfbcc6e5ba29e9a2ed86482f2ba054565b4afddd  HelioG99_Overclock_Adaptive_v1.0.zip
+13c93be79ac5c1cc967c14a735bf690bf57c6de91f591a5104d895b2faac2bc3  vendor_boot_TB350XU_S231018_v6.0_pristine_touch.img
+53c263c4e952ea6fef2ec5e1c12e44467ef7716c71277298c975d0faf1e6984c  FLASH_TOUCH_V6.0_PRISTINE.cmd
+4c915cb1bb8cb1a99143ca06b938964693b9b107b8e2fcd3841b82d9e91d2192  Helio_G99_Extreme_OC_120Hz_v3_Pristine.zip
 9cb01baac328c597898e0b047f8d3aa1d559d40d095d7973173491444aa05eb9  AlwaysStrong-v1.0.5-inject.zip
 fca7140047041425c7652476385ebdd37e8d2d7ce881b88aa462ad9798c16e79  HMA-OSS-ZYGISK-future-5398de45-release.zip
