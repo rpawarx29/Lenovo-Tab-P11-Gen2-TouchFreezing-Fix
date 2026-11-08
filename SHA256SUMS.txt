@@ -1,5 +1,5 @@
 # Lenovo Tab P11 Gen 2 (TB350XU / TB350FU) - SHA256 Checksums
-# Official Release: v6.0.0 (Android 14 S231018)
+# Release: v6.0.0 (Android 14 S231018)
 
 13c93be79ac5c1cc967c14a735bf690bf57c6de91f591a5104d895b2faac2bc3  vendor_boot_TB350XU_S231018_v6.0_pristine_touch.img
 53c263c4e952ea6fef2ec5e1c12e44467ef7716c71277298c975d0faf1e6984c  FLASH_TOUCH_V6.0_PRISTINE.cmd
