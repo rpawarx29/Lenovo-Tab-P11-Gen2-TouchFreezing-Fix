@@ -8,7 +8,7 @@ done
 sleep 3
 
 apply_overclock() {
-    # 1. CPU LITTLE Cluster (policy0: CPU0-5)
+    # 1. CPU LITTLE Cluster (policy0: CPU0-5 - Touch IRQ core)
     echo sugov_ext > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || echo schedutil > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
     echo 1500000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 2>/dev/null
     echo 2000000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 2>/dev/null
@@ -16,7 +16,7 @@ apply_overclock() {
         echo 0 > /sys/devices/system/cpu/cpufreq/policy0/sugov_ext/up_rate_limit_us 2>/dev/null
         echo 10000 > /sys/devices/system/cpu/cpufreq/policy0/sugov_ext/down_rate_limit_us 2>/dev/null
     elif [ -d /sys/devices/system/cpu/cpufreq/policy0/schedutil ]; then
-        echo 500 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us 2>/dev/null
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us 2>/dev/null
     fi
 
     # 2. CPU BIG Cluster (policy6: CPU6-7)
@@ -27,7 +27,7 @@ apply_overclock() {
         echo 0 > /sys/devices/system/cpu/cpufreq/policy6/sugov_ext/up_rate_limit_us 2>/dev/null
         echo 10000 > /sys/devices/system/cpu/cpufreq/policy6/sugov_ext/down_rate_limit_us 2>/dev/null
     elif [ -d /sys/devices/system/cpu/cpufreq/policy6/schedutil ]; then
-        echo 500 > /sys/devices/system/cpu/cpufreq/policy6/schedutil/rate_limit_us 2>/dev/null
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy6/schedutil/rate_limit_us 2>/dev/null
     fi
 
     # 3. GPU Overclock (Mali-G57 & GED)
@@ -41,7 +41,10 @@ apply_overclock() {
     echo 648000000 > /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/min_freq 2>/dev/null
     echo 1100000000 > /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/max_freq 2>/dev/null
 
-    # 4. MediaTek fpsgo & Frame Rate Stabilization (No Throttling)
+    # 4. MediaTek fpsgo & Frame Rate Stabilization (Completely Disabled / Zero Throttling)
+    echo 0 > /sys/kernel/fpsgo/common/fpsgo_enable 2>/dev/null
+    echo 0 > /sys/kernel/fpsgo/common/force_onoff 2>/dev/null
+    echo 0 > /sys/kernel/fpsgo/minitop/enable 2>/dev/null
     echo 0 > /sys/kernel/fpsgo/fbt/thrm_enable 2>/dev/null
     echo 0 > /sys/kernel/fpsgo/fbt/enable_switch_down_throttle 2>/dev/null
     echo 0 > /sys/kernel/fpsgo/fbt/enable_ceiling 2>/dev/null
@@ -75,22 +78,22 @@ apply_sleep() {
 # Initial apply
 apply_overclock
 
-# Adaptive daemon loop using DRM DPMS (Zero overhead)
-PREV_DPMS=""
+# Adaptive daemon loop using dumpsys power (Zero overhead)
+PREV_STATE="Awake"
 while true; do
     sleep 3
-    if [ -f /sys/class/drm/card0-DSI-1/dpms ]; then
-        CUR_DPMS="$(cat /sys/class/drm/card0-DSI-1/dpms 2>/dev/null)"
+    if dumpsys power 2>/dev/null | grep -q "mWakefulness=Awake"; then
+        CUR_STATE="Awake"
     else
-        CUR_DPMS="On"
+        CUR_STATE="Sleep"
     fi
 
-    if [ "$CUR_DPMS" != "$PREV_DPMS" ]; then
-        if [ "$CUR_DPMS" = "On" ]; then
+    if [ "$CUR_STATE" != "$PREV_STATE" ]; then
+        if [ "$CUR_STATE" = "Awake" ]; then
             apply_overclock
         else
             apply_sleep
         fi
-        PREV_DPMS="$CUR_DPMS"
+        PREV_STATE="$CUR_STATE"
     fi
 done &
