@@ -1,14 +1,34 @@
 #!/system/bin/sh
-# Helio G99 Extreme Overclock & Adaptive Performance Daemon
+# Lenovo Tab P11 (2nd Gen) - TB350XU (Helio G99 / MT6789)
+# Overclock & Adaptive Performance Daemon + Vibration Elimination + OTA Block + 120Hz Lock
 
-# Wait for full system boot
-while [ "$(getprop sys.boot_completed)" != "1" ]; do
-    sleep 2
-done
-sleep 3
+# 1. Disable Lenovo OTA Updates
+settings put global ota_disable_automatic_update 1
+pm disable-user --user 0 com.lenovo.ota 2>/dev/null
+am force-stop com.lenovo.ota 2>/dev/null
 
+# 2. Complete Vibration Elimination (Hardware Driver Unbind + Global Settings)
+settings put system haptic_feedback_enabled 0
+settings put system vibrate_when_ringing 0
+settings put system vibrate_on 0
+settings put system notification_vibration_intensity 0
+settings put system haptic_feedback_intensity 0
+settings put system ring_vibration_intensity 0
+settings put system hardware_haptic_feedback_intensity 0
+settings put system media_vibration_intensity 0
+
+if [ -d "/sys/bus/platform/drivers/regulator_vibrator" ]; then
+    echo "soc:regulator_vibrator" > /sys/bus/platform/drivers/regulator_vibrator/unbind 2>/dev/null
+fi
+
+# 3. Lock 120Hz High-Refresh Display (Eliminates 60Hz->120Hz dynamic stutter)
+settings put system min_refresh_rate 120.0
+settings put system peak_refresh_rate 120.0
+settings put global disable_window_blurs 1
+
+# 4. User's Overclock & Adaptive Performance Engine
 apply_overclock() {
-    # 1. CPU LITTLE Cluster (policy0: CPU0-5 - Touch IRQ core)
+    # CPU LITTLE Cluster (policy0: CPU0-5)
     echo sugov_ext > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || echo schedutil > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
     echo 1500000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 2>/dev/null
     echo 2000000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 2>/dev/null
@@ -19,7 +39,7 @@ apply_overclock() {
         echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us 2>/dev/null
     fi
 
-    # 2. CPU BIG Cluster (policy6: CPU6-7)
+    # CPU BIG Cluster (policy6: CPU6-7)
     echo sugov_ext > /sys/devices/system/cpu/cpufreq/policy6/scaling_governor 2>/dev/null || echo schedutil > /sys/devices/system/cpu/cpufreq/policy6/scaling_governor
     echo 1700000 > /sys/devices/system/cpu/cpufreq/policy6/scaling_min_freq 2>/dev/null
     echo 2200000 > /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq 2>/dev/null
@@ -30,7 +50,7 @@ apply_overclock() {
         echo 0 > /sys/devices/system/cpu/cpufreq/policy6/schedutil/rate_limit_us 2>/dev/null
     fi
 
-    # 3. GPU Overclock (Mali-G57 & GED)
+    # GPU Overclock (Mali-G57 & GED)
     echo 1100000 > /sys/module/ged/parameters/gpu_cust_upbound_freq 2>/dev/null
     echo 648000 > /sys/module/ged/parameters/gpu_bottom_freq 2>/dev/null
     echo 948000 > /sys/module/ged/parameters/gpu_cust_boost_freq 2>/dev/null
@@ -41,7 +61,7 @@ apply_overclock() {
     echo 648000000 > /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/min_freq 2>/dev/null
     echo 1100000000 > /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/max_freq 2>/dev/null
 
-    # 4. MediaTek fpsgo & Frame Rate Stabilization (Completely Disabled / Zero Throttling)
+    # MediaTek fpsgo & Frame Rate Stabilization (Zero Throttling)
     echo 0 > /sys/kernel/fpsgo/common/fpsgo_enable 2>/dev/null
     echo 0 > /sys/kernel/fpsgo/common/force_onoff 2>/dev/null
     echo 0 > /sys/kernel/fpsgo/minitop/enable 2>/dev/null
@@ -52,17 +72,13 @@ apply_overclock() {
     echo 1 > /sys/kernel/fpsgo/fbt/boost_ta 2>/dev/null
     echo 0 > /sys/kernel/fpsgo/common/stop_boost 2>/dev/null
 
-    # 5. Lock 120Hz High-Refresh Display (Eliminates 60Hz->120Hz dynamic stutter)
-    settings put system min_refresh_rate 120.0 2>/dev/null
-    settings put system peak_refresh_rate 120.0 2>/dev/null
-
-    # 6. VM & I/O
+    # VM & I/O
     echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null
     echo 60 > /proc/sys/vm/swappiness 2>/dev/null
     echo 20 > /proc/sys/vm/dirty_ratio 2>/dev/null
     echo 10 > /proc/sys/vm/dirty_background_ratio 2>/dev/null
 
-    for q in /sys/block/sd*/queue/read_ahead_kb; do
+    for q in /sys/block/sd*/queue/read_ahead_kb /sys/block/dm-*/queue/read_ahead_kb; do
         [ -f "$q" ] && echo 1024 > "$q" 2>/dev/null
     done
 }
@@ -75,25 +91,29 @@ apply_sleep() {
     echo 390000000 > /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/min_freq 2>/dev/null
 }
 
-# Initial apply
+# Initial apply immediately
 apply_overclock
 
-# Adaptive daemon loop using dumpsys power (Zero overhead)
-PREV_STATE="Awake"
-while true; do
-    sleep 3
-    if dumpsys power 2>/dev/null | grep -q "mWakefulness=Awake"; then
-        CUR_STATE="Awake"
-    else
-        CUR_STATE="Sleep"
-    fi
-
-    if [ "$CUR_STATE" != "$PREV_STATE" ]; then
-        if [ "$CUR_STATE" = "Awake" ]; then
-            apply_overclock
+# Background adaptive daemon loop (Zero overhead power state monitor)
+(
+    PREV_STATE="Awake"
+    while true; do
+        sleep 3
+        if dumpsys power 2>/dev/null | grep -q "mWakefulness=Awake"; then
+            CUR_STATE="Awake"
         else
-            apply_sleep
+            CUR_STATE="Sleep"
         fi
-        PREV_STATE="$CUR_STATE"
-    fi
-done &
+
+        if [ "$CUR_STATE" != "$PREV_STATE" ]; then
+            if [ "$CUR_STATE" = "Awake" ]; then
+                apply_overclock
+            else
+                apply_sleep
+            fi
+            PREV_STATE="$CUR_STATE"
+        fi
+    done
+) </dev/null >/dev/null 2>&1 &
+
+exit 0

@@ -1,6 +1,6 @@
-id=helio_g99_extreme_oc
-name=Helio G99 Extreme OC & 120Hz Pristine
-version=v6.0.0-Pristine
-versionCode=60
-author=Ruturaj Pawar & Antigravity
-description=Pristine zero-latency touch calibration, locked 120Hz, and extreme unthrottled performance for Lenovo Tab P11 Gen 2.
+id=helio_g99_oc
+name=Helio G99 Extreme Overclock & Adaptive Performance
+version=v3.0-Pristine
+versionCode=300
+author=rpawarx29
+description=🔥 Extreme Helio G99 (MT6789) CPU (2.2GHz / 2.0GHz) & Mali-G57 GPU (1.1GHz) Overclock + Zero-Throttling FPSGO + 120Hz Lock + Adaptive Battery Saver Daemon.

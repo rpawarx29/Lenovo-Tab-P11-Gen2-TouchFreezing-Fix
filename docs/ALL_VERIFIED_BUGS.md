@@ -143,3 +143,106 @@
   Android's InputFlinger retained active touches in memory, causing ghost touches, stuck keys, and tap unresponsiveness.
 - **Patch Resolution:**
   - `[P9]` replaces `cbz w8, #0x3a60` with `nop` (`1f2003d5`). Multi-touch slot clearing and `BTN_TOUCH = 0` are unconditionally dispatched on every finger release.
+
+---
+
+### BUG-11: Artificial Pressure Calibration Scaling (The 1-Second Tap Freeze)
+- **Location:** `/vendor/usr/idc/himax-touchscreen.idc`
+- **Root Cause:**
+  In stock ROM, `/vendor/usr/idc/himax-touchscreen.idc` defines an artificial physical pressure scaling factor:
+  ```ini
+  touch.pressure.scale = 0.005
+  ```
+- **Consequence:**
+  When a user taps lightly or types fast, Android's `TouchInputMapper` drops the tap or buffers it for up to 1000ms until pressure crosses an arbitrary threshold. The user perceives this as an unresponsive screen or dropped keystrokes.
+- **Patch Resolution:**
+  Set `touch.pressure.calibration = none` and `touch.size.calibration = diameter`. This immediately eliminates the 1-second delay and restores instantaneous tap response.
+
+---
+
+### BUG-12: Framework Motion Smoothing Filter Misclassification
+- **Location:** Android InputReader filter profile in IDC
+- **Root Cause:**
+  The default motion filter (`filter.level = 1`) misclassifies subtle slides and rapid taps as micro-jitter, filtering them out.
+- **Consequence:**
+  Swipes are frequently misclassified as clicks, and quick taps are swallowed by the framework filter.
+- **Patch Resolution:**
+  Disable framework-level motion dampening in the clean IDC to deliver raw, unfiltered coordinates directly to the UI.
+
+---
+
+### BUG-13: Linux Type-B Multi-Touch Event Ordering
+- **Location:** `himax_mmi.ko` EventHub dispatch pipeline
+- **Root Cause:**
+  Coordinates (`ABS_MT_POSITION_X/Y`) are reported prior to tracking ID assignment in the event stream.
+- **Consequence:**
+  Android `InputReader` drops touch events during rapid typing transitions.
+- **Patch Resolution:**
+  Enforce standard Type-B event ordering: dispatch `ABS_MT_TRACKING_ID` early via `input_mt_report_slot_state` before coordinates.
+
+---
+
+### BUG-14: Dynamic Refresh Rate & Polling Rate Collapse
+- **Location:** Display power manager & refresh rate policies
+- **Root Cause:**
+  The display dynamically downclocks from 120Hz down to 60Hz/48Hz after 2 seconds of inactivity, which simultaneously drops the digitizer polling rate.
+- **Consequence:**
+  When the user touches the screen again after an idle period, the first 1–2 touches lag or fail to register.
+- **Patch Resolution:**
+  Lock 120.00 Hz display refresh (`min_refresh_rate = 120.0`, `peak_refresh_rate = 120.0`) to keep digitizer sampling at 240Hz consistently.
+
+---
+
+### BUG-15: MediaTek FPSGO CPU0 Interrupt Starvation
+- **Location:** `/sys/kernel/fpsgo/` and CPU governor policies
+- **Root Cause:**
+  MediaTek’s `fpsgo` thermal engine aggressively throttles CPU0 down to 500 MHz even under light thermal loads. Because CPU0 handles the hardware SPI interrupts for the touch controller, the touch input processing thread starves.
+- **Consequence:**
+  The tablet stutters, drops touches, and experiences touch freezes during everyday tasks and gaming.
+- **Patch Resolution:**
+  Disable FPSGO throttling (`fpsgo_enable = 0`, `boost_ta = 1`) and maintain a responsive base frequency on the Little core cluster during screen wakefulness.
+
+---
+
+### BUG-16: SystemUI Window Blur Scrim Stutter
+- **Location:** WindowManager global settings
+- **Root Cause:**
+  Pulling down the notification shade triggers a broken blur scrim (`disable_window_blurs = 0`), which stalls the GPU and compositor.
+- **Consequence:**
+  Severe frame freezes during notification shade pull-down and everyday UI interactions.
+- **Patch Resolution:**
+  Set `disable_window_blurs = 1` globally to bypass the broken shader pipeline.
+
+---
+
+### BUG-17: Active Stylus / Precision Pen 2 Mouse Pointer Misclassification
+- **Location:** `/vendor/usr/idc/himax-stylus.idc`
+- **Root Cause:**
+  Stock ROM erroneously classifies the active digitizer stylus as an indirect pointer:
+  ```ini
+  touch.deviceType = pointer
+  ```
+- **Consequence:**
+  Android treats the Precision Pen 2 like an indirect mouse cursor, applying mouse-pointer acceleration curves that amplify hand tremors and produce severe diagonal line wobble and stroke jitter.
+- **Patch Resolution:**
+  Configure as direct touch digitizer with linear pressure calibration and moving-average jitter dampener:
+  ```ini
+  touch.deviceType = touchScreen
+  touch.gestureMode = spots
+  touch.pressure.calibration = physical
+  touch.pressure.scale = 0.000244140625
+  touch.distance.calibration = scaled
+  touch.distance.scale = 1.0
+  touch.filter.level = 2
+  ```
+
+---
+
+### BUG-18: Hardware Vibrator Bus Interference
+- **Location:** Platform driver bindings (`soc:regulator_vibrator`)
+- **Root Cause:**
+  Haptic feedback motor activation sends electrical/mechanical spikes across the board, inducing SPI bus noise during typing.
+- **Consequence:**
+  Touch freezes and dropped letters during fast typing with haptic feedback enabled.
+- **Patch Resolution:**
+  Unbind `soc:regulator_vibrator` from platform driver and mute haptic intensities to eliminate electrical/mechanical spikes.
