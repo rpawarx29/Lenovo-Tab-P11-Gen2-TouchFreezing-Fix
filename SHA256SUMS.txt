@@ -1,8 +1,21 @@
 # Lenovo Tab P11 Gen 2 (TB350XU / TB350FU) - SHA256 Checksums
-# Release: v6.0.0 (Android 14 S231018)
+# Release: v6.1.0-Ultimate (Android 14 S231018 / Linux 5.10.233)
 
-13c93be79ac5c1cc967c14a735bf690bf57c6de91f591a5104d895b2faac2bc3  vendor_boot_TB350XU_S231018_v6.0_pristine_touch.img
-53c263c4e952ea6fef2ec5e1c12e44467ef7716c71277298c975d0faf1e6984c  FLASH_TOUCH_V6.0_PRISTINE.cmd
-97eb5f81d140391856685e79520a421a30f41bd9f23a33189e2124a60705d2f8  Helio_G99_Extreme_OC_120Hz_v3_Pristine.zip
-9cb01baac328c597898e0b047f8d3aa1d559d40d095d7973173491444aa05eb9  AlwaysStrong-v1.0.5-inject.zip
-fca7140047041425c7652476385ebdd37e8d2d7ce881b88aa462ad9798c16e79  HMA-OSS-ZYGISK-future-5398de45-release.zip
+# Generated S231018 Partition & Kernel Outputs (Reproduced by tools/build_s231018_ultimate_touch.py)
+f570272f25a1c2354b60469cda6e163c56c149f5f84f2ebf0cddc21565c77402  vendor_boot_TB350XU_S231018_ULTIMATE_TOUCH.img
+a7efe8622dc9c9461ee00e1ef6b0ddb7a367e6e779b423e60b1173d6dc64fda5  himax_mmi_s231018_ultimate.ko
+
+# Official Untouched Stock S231018 Reference (Input Required to Build)
+0c06ebe186f39b1ec64398fc8e3bad74b0c2a7c4fae8134822f7adcc12c0a7c4  TB350XU_USER_S231018_2601050930_MP_ROW/image/vendor_boot.img
+1085f0a9b0b12dabb6a1c658982798b1bc152dddc44abae055378a7ff6ed8b29  lib/modules/himax_mmi.ko (stock S231018)
+
+# Repository Tracked Scripts & Flashable Module
+8596ec6f390706df6f3802a9bf229db0928af63a206edc344d6f63e4a9c541d3  releases/TB350XU_Master_Touch_and_Performance_Fix.zip
+f3f6d04024aa417b4c961449c9c1a0ac28a269d5da4ab4b095b3fb04399012fc  tools/build_s231018_ultimate_touch.py
+672bf54e73311af032f476faabc158722eaefc6bd9f222780cc3f97668ecbf6c  tools/build_module_zip.py
+e61642464ea24d25e9462389c0024cc04f750299a41c3a895f77411054442c31  tools/FLASH_S231018_ULTIMATE_TOUCH.cmd
+416aa5bc28b0579a5747be597a5c2b54ec428f29021562cbc65b837f19b33ddd  tools/BUILD_FINAL.py
+
+# Historical Android 12 (S020008 / 5.10.136) Stock Baseline
+24fe1068b0b46a15480521a1df810ed23db55091371524264842a79064a2cfc6  vendor_boot.img (S020008 stock)
+e9dc21ba90f42c0a136140c6e8e2838608146d6e20323c21ff237650349a1827  himax_mmi.ko (S020008 stock)

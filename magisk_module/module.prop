@@ -1,6 +1,6 @@
-id=helio_g99_oc
-name=Helio G99 Extreme Overclock & Adaptive Performance
-version=v3.0-Pristine
-versionCode=300
-author=rpawarx29
-description=🔥 Extreme Helio G99 (MT6789) CPU (2.2GHz / 2.0GHz) & Mali-G57 GPU (1.1GHz) Overclock + Zero-Throttling FPSGO + 120Hz Lock + Adaptive Battery Saver Daemon.
+id=tb350xu_master_touch_fix
+name=Lenovo Tab P11 Gen 2 - Ultimate Touch & Performance Suite
+version=v6.1-Ultimate
+versionCode=610
+author=rpawarx29 & Antigravity
+description=Unified Touch & Performance Suite for TB350XU S231018 (pairs with patched himax_mmi.ko): restores 2000ms SF touch timer, clean IDCs, MTK PowerHAL-resistant CPU/GPU/sugov/uclamp responsiveness, and deep-sleep power gating. Preserves native Settings RR (60/Auto/120Hz) and stock haptics.

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.img
+*.ko
+*.bin
+*.cpio
+*.lz4
+.DS_Store
+Thumbs.db

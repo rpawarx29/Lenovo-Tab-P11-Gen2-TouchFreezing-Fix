@@ -1,1 +1,7 @@
-# Helio G99 Adaptive OC Module
+# Lenovo Tab P11 Gen 2 (TB350XU) - Ultimate Touch & Display Props
+# Restores stock 2000ms SurfaceFlinger touch timer (prevents 120->60Hz drops mid-typing)
+# Preserves native Settings refresh rate toggle & stock hardware haptics
+windowsmgr.max_events_per_sec=240
+ro.surface_flinger.set_touch_timer_ms=2000
+ro.surface_flinger.set_idle_timer_ms=1000
+debug.sf.disable_backpressure=1

@@ -1,119 +1,120 @@
 #!/system/bin/sh
 # Lenovo Tab P11 (2nd Gen) - TB350XU (Helio G99 / MT6789)
-# Overclock & Adaptive Performance Daemon + Vibration Elimination + OTA Block + 120Hz Lock
+# Ultimate Touch & Performance Daemon (v6.1-Ultimate)
+# Preserves Native Haptics & User Settings Refresh Rate
 
-# 1. Disable Lenovo OTA Updates
+while [ "$(getprop sys.boot_completed)" != "1" ]; do
+    sleep 1
+done
+
+# 1. Disable Lenovo Background OTA Update Pressure & GPU Window Blur Stalls
 settings put global ota_disable_automatic_update 1
 pm disable-user --user 0 com.lenovo.ota 2>/dev/null
 am force-stop com.lenovo.ota 2>/dev/null
-
-# 2. Complete Vibration Elimination (Hardware Driver Unbind + Global Settings)
-settings put system haptic_feedback_enabled 0
-settings put system vibrate_when_ringing 0
-settings put system vibrate_on 0
-settings put system notification_vibration_intensity 0
-settings put system haptic_feedback_intensity 0
-settings put system ring_vibration_intensity 0
-settings put system hardware_haptic_feedback_intensity 0
-settings put system media_vibration_intensity 0
-
-if [ -d "/sys/bus/platform/drivers/regulator_vibrator" ]; then
-    echo "soc:regulator_vibrator" > /sys/bus/platform/drivers/regulator_vibrator/unbind 2>/dev/null
-fi
-
-# 3. Lock 120Hz High-Refresh Display (Eliminates 60Hz->120Hz dynamic stutter)
-settings put system min_refresh_rate 120.0
-settings put system peak_refresh_rate 120.0
 settings put global disable_window_blurs 1
 
-# 4. User's Overclock & Adaptive Performance Engine
-apply_overclock() {
-    # CPU LITTLE Cluster (policy0: CPU0-5)
-    echo sugov_ext > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || echo schedutil > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
-    echo 1500000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 2>/dev/null
-    echo 2000000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 2>/dev/null
-    if [ -d /sys/devices/system/cpu/cpufreq/policy0/sugov_ext ]; then
-        echo 0 > /sys/devices/system/cpu/cpufreq/policy0/sugov_ext/up_rate_limit_us 2>/dev/null
-        echo 10000 > /sys/devices/system/cpu/cpufreq/policy0/sugov_ext/down_rate_limit_us 2>/dev/null
-    elif [ -d /sys/devices/system/cpu/cpufreq/policy0/schedutil ]; then
-        echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us 2>/dev/null
-    fi
+write_if_ne() {
+    [ -f "$1" ] || return 0
+    read -r CUR < "$1" 2>/dev/null
+    [ "$CUR" = "$2" ] || echo "$2" > "$1" 2>/dev/null
+}
 
-    # CPU BIG Cluster (policy6: CPU6-7)
-    echo sugov_ext > /sys/devices/system/cpu/cpufreq/policy6/scaling_governor 2>/dev/null || echo schedutil > /sys/devices/system/cpu/cpufreq/policy6/scaling_governor
-    echo 1700000 > /sys/devices/system/cpu/cpufreq/policy6/scaling_min_freq 2>/dev/null
-    echo 2200000 > /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq 2>/dev/null
-    if [ -d /sys/devices/system/cpu/cpufreq/policy6/sugov_ext ]; then
-        echo 0 > /sys/devices/system/cpu/cpufreq/policy6/sugov_ext/up_rate_limit_us 2>/dev/null
-        echo 10000 > /sys/devices/system/cpu/cpufreq/policy6/sugov_ext/down_rate_limit_us 2>/dev/null
-    elif [ -d /sys/devices/system/cpu/cpufreq/policy6/schedutil ]; then
-        echo 0 > /sys/devices/system/cpu/cpufreq/policy6/schedutil/rate_limit_us 2>/dev/null
-    fi
+raise_if_lt() {
+    [ -f "$1" ] || return 0
+    read -r CUR < "$1" 2>/dev/null
+    case "$CUR" in
+        ''|*[!0-9]*) echo "$2" > "$1" 2>/dev/null ;;
+        *) [ "$CUR" -lt "$2" ] && echo "$2" > "$1" 2>/dev/null ;;
+    esac
+}
 
-    # GPU Overclock (Mali-G57 & GED)
-    echo 1100000 > /sys/module/ged/parameters/gpu_cust_upbound_freq 2>/dev/null
-    echo 648000 > /sys/module/ged/parameters/gpu_bottom_freq 2>/dev/null
-    echo 948000 > /sys/module/ged/parameters/gpu_cust_boost_freq 2>/dev/null
-    echo 1 > /sys/module/ged/parameters/boost_gpu_enable 2>/dev/null
-    echo 1 > /sys/module/ged/parameters/ged_smart_boost 2>/dev/null
-    echo 45 > /sys/module/ged/parameters/g_fb_dvfs_threshold 2>/dev/null
-
-    echo 648000000 > /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/min_freq 2>/dev/null
-    echo 1100000000 > /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/max_freq 2>/dev/null
-
-    # MediaTek fpsgo & Frame Rate Stabilization (Zero Throttling)
-    echo 0 > /sys/kernel/fpsgo/common/fpsgo_enable 2>/dev/null
-    echo 0 > /sys/kernel/fpsgo/common/force_onoff 2>/dev/null
-    echo 0 > /sys/kernel/fpsgo/minitop/enable 2>/dev/null
-    echo 0 > /sys/kernel/fpsgo/fbt/thrm_enable 2>/dev/null
-    echo 0 > /sys/kernel/fpsgo/fbt/enable_switch_down_throttle 2>/dev/null
-    echo 0 > /sys/kernel/fpsgo/fbt/enable_ceiling 2>/dev/null
-    echo 0 > /sys/kernel/fpsgo/fstb/adopt_low_fps 2>/dev/null
-    echo 1 > /sys/kernel/fpsgo/fbt/boost_ta 2>/dev/null
-    echo 0 > /sys/kernel/fpsgo/common/stop_boost 2>/dev/null
-
-    # VM & I/O
+apply_awake_static() {
+    write_if_ne /sys/devices/system/cpu/cpufreq/policy0/scaling_governor sugov_ext
+    write_if_ne /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 2000000
+    write_if_ne /sys/devices/system/cpu/cpufreq/policy6/scaling_governor sugov_ext
+    write_if_ne /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq 2200000
     echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null
     echo 60 > /proc/sys/vm/swappiness 2>/dev/null
     echo 20 > /proc/sys/vm/dirty_ratio 2>/dev/null
     echo 10 > /proc/sys/vm/dirty_background_ratio 2>/dev/null
-
     for q in /sys/block/sd*/queue/read_ahead_kb /sys/block/dm-*/queue/read_ahead_kb; do
         [ -f "$q" ] && echo 1024 > "$q" 2>/dev/null
     done
+    write_if_ne /sys/kernel/fpsgo/common/force_onoff 0
+    write_if_ne /sys/kernel/fpsgo/minitop/enable 0
+    write_if_ne /sys/kernel/fpsgo/fbt/enable_switch_down_throttle 0
+    write_if_ne /sys/kernel/fpsgo/fbt/enable_ceiling 0
+    write_if_ne /sys/kernel/fpsgo/fstb/adopt_low_fps 0
+    write_if_ne /sys/kernel/fpsgo/common/stop_boost 0
+    write_if_ne /sys/module/ged/parameters/boost_gpu_enable 1
+    write_if_ne /sys/module/ged/parameters/ged_smart_boost 1
+    write_if_ne /sys/module/ged/parameters/g_fb_dvfs_threshold 45
+    [ -f /proc/game_mode ] && echo 0 > /proc/game_mode 2>/dev/null
+}
+
+enforce_awake() {
+    # Enforce minimum floors without downgrading active PowerHAL launch bursts
+    raise_if_lt /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 1200000
+    raise_if_lt /sys/devices/system/cpu/cpufreq/policy6/scaling_min_freq 1400000
+    write_if_ne /sys/devices/system/cpu/cpufreq/policy0/sugov_ext/up_rate_limit_us 0
+    write_if_ne /sys/devices/system/cpu/cpufreq/policy0/sugov_ext/down_rate_limit_us 30000
+    write_if_ne /sys/devices/system/cpu/cpufreq/policy6/sugov_ext/up_rate_limit_us 0
+    write_if_ne /sys/devices/system/cpu/cpufreq/policy6/sugov_ext/down_rate_limit_us 30000
+
+    raise_if_lt /sys/module/ged/parameters/gpu_bottom_freq 648000
+    write_if_ne /sys/module/ged/parameters/gpu_cust_upbound_freq 1100000
+    raise_if_lt /sys/module/ged/parameters/gpu_cust_boost_freq 948000
+    raise_if_lt /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/min_freq 648000000
+    write_if_ne /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/max_freq 1100000000
+
+    write_if_ne /sys/kernel/fpsgo/common/fpsgo_enable 0
+    write_if_ne /sys/kernel/fpsgo/fbt/thrm_enable 0
+    write_if_ne /sys/kernel/fpsgo/fbt/boost_ta 1
+
+    write_if_ne /dev/cpuctl/top-app/cpu.uclamp.latency_sensitive 1
 }
 
 apply_sleep() {
-    # Drop to low power when screen is off to preserve battery and keep tablet cool
     echo 500000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 2>/dev/null
     echo 725000 > /sys/devices/system/cpu/cpufreq/policy6/scaling_min_freq 2>/dev/null
     echo 390000 > /sys/module/ged/parameters/gpu_bottom_freq 2>/dev/null
+    echo 390000 > /sys/module/ged/parameters/gpu_cust_boost_freq 2>/dev/null
     echo 390000000 > /sys/devices/platform/soc/13000000.mali/devfreq/13000000.mali/min_freq 2>/dev/null
+    echo 1 > /sys/kernel/fpsgo/fbt/thrm_enable 2>/dev/null
+    echo 0 > /dev/cpuctl/top-app/cpu.uclamp.latency_sensitive 2>/dev/null
 }
 
-# Initial apply immediately
-apply_overclock
+is_screen_on() {
+    if [ -r /sys/class/leds/lcd-backlight/brightness ]; then
+        read -r BL < /sys/class/leds/lcd-backlight/brightness 2>/dev/null
+        case "$BL" in
+            ''|0) return 1 ;;
+            *) return 0 ;;
+        esac
+    fi
+    IS_AWAKE=$(dumpsys power 2>/dev/null | grep -E "mWakefulness=Awake|Display Power: state=ON" | head -n 1)
+    [ -n "$IS_AWAKE" ]
+}
 
-# Background adaptive daemon loop (Zero overhead power state monitor)
+apply_awake_static
+enforce_awake
+
 (
     PREV_STATE="Awake"
     while true; do
-        sleep 3
-        if dumpsys power 2>/dev/null | grep -q "mWakefulness=Awake"; then
-            CUR_STATE="Awake"
-        else
-            CUR_STATE="Sleep"
-        fi
-
-        if [ "$CUR_STATE" != "$PREV_STATE" ]; then
-            if [ "$CUR_STATE" = "Awake" ]; then
-                apply_overclock
-            else
-                apply_sleep
+        if is_screen_on; then
+            if [ "$PREV_STATE" != "Awake" ]; then
+                apply_awake_static
+                PREV_STATE="Awake"
             fi
-            PREV_STATE="$CUR_STATE"
+            enforce_awake
+            sleep 2
+        else
+            if [ "$PREV_STATE" != "Asleep" ]; then
+                apply_sleep
+                PREV_STATE="Asleep"
+            fi
+            sleep 5
         fi
     done
-) </dev/null >/dev/null 2>&1 &
-
-exit 0
+) &

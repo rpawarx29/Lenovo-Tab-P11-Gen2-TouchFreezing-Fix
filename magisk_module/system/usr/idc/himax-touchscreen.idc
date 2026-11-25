@@ -1,4 +1,5 @@
-# IDC for Himax HX83102J Touchscreen
+# Calibrated High-Resolution IDC for Himax HX83102J Touchscreen
+# Lenovo Tab P11 (2nd Gen) - TB350XU
 touch.deviceType = touchScreen
 touch.orientationAware = 1
 touch.pressure.calibration = none
