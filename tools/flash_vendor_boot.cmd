@@ -1,9 +1,9 @@
 @echo off
 setlocal EnableDelayedExpansion
-title TB350XU S231018 Ultimate Touch - Safe A/B Fastboot Flasher
+title TB350XU S231018 Touch Fix - Fastboot A/B Flasher
 
 set "SCRIPT_DIR=%~dp0"
-set "IMG_NAME=vendor_boot_TB350XU_S231018_ULTIMATE_TOUCH.img"
+set "IMG_NAME=vendor_boot_TB350XU_S231018_touch_fix.img"
 
 if exist "%~1" (
     set "IMG_PATH=%~1"
@@ -13,7 +13,7 @@ if exist "%~1" (
     set "IMG_PATH=%SCRIPT_DIR%..\..\%IMG_NAME%"
 ) else (
     echo [ERROR] Could not locate %IMG_NAME%.
-    echo Run: python tools\build_s231018_ultimate_touch.py
+    echo Run: python tools\patch_vendor_boot.py
     echo Or pass the image path as the first argument.
     exit /b 1
 )
@@ -29,7 +29,7 @@ if %ERRORLEVEL%==0 (
 )
 
 echo ============================================================================
-echo  Lenovo Tab P11 Gen 2 (TB350XU) - S231018 Ultimate Touch Flasher
+echo  Lenovo Tab P11 Gen 2 (TB350XU) - Android 14 S231018 Touch Fix Flasher
 echo  Image: %IMG_PATH%
 echo ============================================================================
 "%FASTBOOT%" devices
@@ -52,7 +52,7 @@ if "%CUR_SLOT%"=="" (
 )
 
 echo.
-echo [Step 1/2] Flashing active slot ONLY first (%ACTIVE_PART%) for safe verification...
+echo [Step 1/2] Flashing active slot first (%ACTIVE_PART%) for safe verification...
 "%FASTBOOT%" flash %ACTIVE_PART% "%IMG_PATH%"
 if errorlevel 1 (
     echo [ERROR] Flashing %ACTIVE_PART% failed!
@@ -60,7 +60,7 @@ if errorlevel 1 (
 )
 
 echo.
-choice /M "[Step 2/2] Also flash inactive backup slot (%INACTIVE_PART%)? (Recommend N until first boot verified)"
+choice /M "[Step 2/2] Also flash inactive fallback slot (%INACTIVE_PART%)? (Recommend N until first boot verified)"
 if errorlevel 2 goto :SKIP_B
 "%FASTBOOT%" flash %INACTIVE_PART% "%IMG_PATH%"
 if errorlevel 1 (

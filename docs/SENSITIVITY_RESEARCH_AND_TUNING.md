@@ -1,7 +1,7 @@
 # SENSITIVITY RESEARCH, SENSING CAPABILITIES AND TUNING ANALYSIS
-**Target Subsystem:** Himax HX83102J Capacitive Touch & Active Stylus Subsystem  
-**Device:** Lenovo Tab P11 Gen 2 (TB350XU)  
-**Report Scope:** Comprehensive Multi-Layer Sensitivity Audit  
+**Target Subsystem:** Himax HX83102J Capacitive Touch & Active Stylus Subsystem
+**Device:** Lenovo Tab P11 Gen 2 (TB350XU)
+**Report Scope:** Comprehensive Multi-Layer Sensitivity Audit
 
 ---
 

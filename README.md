@@ -1,156 +1,143 @@
-# Lenovo Tab P11 Gen 2 (`TB350XU` / `TB350FU`)
-## S231018 Ultimate Touch, Typing & Helio G99 Performance Suite (`v6.1.0-Ultimate`)
+# Lenovo Tab P11 Gen 2 (`TB350XU` / `TB350FU`) — Touch & Typing Fix (`Android 14 S231018`)
 
-[![Release](https://img.shields.io/badge/Release-v6.1.0--Ultimate-brightgreen.svg)](docs/CHANGELOG.md)
-[![Firmware](https://img.shields.io/badge/Primary%20ROM-S231018%20(Android%2014%20%7C%205.10.233)-blue.svg)](docs/S231018_ULTIMATE_VERIFICATION_REPORT.md)
-[![Hardware](https://img.shields.io/badge/Chipset-MT6789%20Helio%20G99%20%7C%20HX83102J-orange.svg)](docs/ALL_VERIFIED_BUGS.md)
-[![Support](https://img.shields.io/badge/Root-APatch%20%7C%20KernelSU%20%7C%20Magisk-red.svg)](#step-3-install-apatch--magisk--ksu-module)
-[![License](https://img.shields.io/badge/License-GPL%202.0-yellow.svg)](docs/ROLLBACK.md)
+[![ROM](https://img.shields.io/badge/ROM-Android%2014%20(S231018)-blue.svg)](docs/S231018_VERIFICATION_REPORT.md)
+[![Hardware](https://img.shields.io/badge/SoC-MediaTek%20Helio%20G99%20%7C%20HX83102J-orange.svg)](docs/ALL_VERIFIED_BUGS.md)
+[![Root](https://img.shields.io/badge/Root-APatch%20%7C%20KernelSU%20%7C%20Magisk-green.svg)](#step-3-install-root-module)
+[![License](https://img.shields.io/badge/License-GPL%202.0-lightgrey.svg)](docs/ROLLBACK.md)
 
-The complete, hardware-verified two-layer fix for dropped keystrokes, touchscreen unresponsiveness, ghost/stuck multi-touch slots, disabled High-Sensitivity mode, PowerHAL clock throttling, and Precision Pen 2 stroke wobble on the **Lenovo Tab P11 Gen 2**.
+Complete kernel (`vendor_boot` -> `himax_mmi.ko`) and userspace (`APatch` / `Magisk` / `KernelSU` module) fix for touchscreen freezes, dropped typing keystrokes, disabled High-Sensitivity mode (`HSEN`), PowerHAL clock resets, and Precision Pen 2 stroke wobble on the **Lenovo Tab P11 Gen 2** running stock **Android 14 S231018**.
 
-> **Design Guarantee (`v6.1.0-Ultimate`):**
-> - **Preserves native Display Refresh Rate settings (`60Hz / Auto / 120Hz`)** — NO forced 120Hz lock.
-> - **Preserves stock hardware haptics (`soc:regulator_vibrator`)** — NO vibrator unbinding or muting.
-> - **Preserves native `EDGE` IRQ mode (`0x2002`)** matching S231018 firmware — NO sticky key-release lag.
+**Core Behavior Preserved:**
+- Native Settings refresh rate selector (`60Hz / Auto / 120Hz`) remains unlocked (no forced 120Hz lock).
+- Stock hardware vibration (`soc:regulator_vibrator`) remains enabled and untouched.
+- Native `EDGE` interrupt trigger (`0x2002`) matching S231018 firmware is preserved (no forced Level-Low sticky releases).
 
 ---
 
-## 1. Exact Hardware, ROM & Software Compatibility
+## 1. Supported Hardware & Software
 
-| Component | Verified Value / Specification |
+| Item | Verified Specification |
 | :--- | :--- |
-| **Models** | Lenovo Tab P11 (2nd Gen) — **`TB350XU`** (LTE) & **`TB350FU`** (Wi-Fi) |
-| **SoC / CPU / GPU** | MediaTek Helio G99 (`MT6789`) — 6x A55 (`500–2000 MHz`), 2x A76 (`725–2200 MHz`), Mali-G57 MC2 (`390–1100 MHz`) |
-| **Primary Verified Stock ROM** | **`TB350XU_USER_S231018_2601050930_MP_ROW`** (`ro.build.display.id = TB350XU_S231018_260105_ROW`) |
-| **Legacy Reference ROM** | Android 12 **`TB350XU_MT6789_USER_S020008_221025`** (`5.10.136`, documented in historical scripts) |
-| **Kernel Vermagic (S231018)** | `5.10.233-android12-9-g9568a331d924 SMP preempt mod_unload modversions aarch64` |
-| **Touch Controller & Panel** | Himax **`HX83102J`** (`Huaqin_BOE`, Project `Tulip_AX6298`, `FW_VER = 0xC402`, Driver `2.1.0.2_Tulip_01`) |
-| **SPI / Interrupt Hardware** | `IRQ 72` (`1100a000.spi0`), `IRQ 206` (`mtk-eint 54 Edge himax_tp`), Input nodes `himax-touchscreen` & `himax-stylus` |
-| **Partition & Boot State** | A/B layout (`vendor_boot_a` / `vendor_boot_b`), Unlocked bootloader (`orange`), `veritymode = enforcing` |
-| **Root Environments** | **APatch** (`11282` / `0.13.9` tested), **KernelSU**, and **Magisk** (Zygisk + PIF + Shamiko stealth compatible) |
+| **Models** | Lenovo Tab P11 (2nd Gen) — `TB350XU` (LTE) & `TB350FU` (Wi-Fi) |
+| **SoC / Clusters / GPU** | MediaTek Helio G99 (`MT6789`) — `policy0` (6x A55, 500–2000 MHz), `policy6` (2x A76, 725–2200 MHz), Mali-G57 MC2 (`13000000.mali`, 390–1100 MHz) |
+| **Target Stock ROM** | `TB350XU_USER_S231018_2601050930_MP_ROW` (`TB350XU_S231018_260105_ROW`, Android 14) |
+| **Kernel Vermagic** | `5.10.233-android12-9-g9568a331d924 SMP preempt mod_unload modversions aarch64` *(MTK GKI 5.10 kernel branch running Android 14 S231018)* |
+| **Touch Controller & Panel** | Himax `HX83102J`, `Huaqin_BOE`, Project `Tulip_AX6298`, `FW_VER = 0xC402`, Driver `2.1.0.2_Tulip_01` |
+| **SPI & Interrupt Lines** | `IRQ 72` (`1100a000.spi0`), `IRQ 206` (`mtk-eint 54 Edge himax_tp`), nodes `himax-touchscreen` & `himax-stylus` |
+| **Partitions & Boot State** | A/B layout (`vendor_boot_a` / `vendor_boot_b`), unlocked bootloader (`orange`), `veritymode = enforcing` |
+| **Tested Root Stack** | APatch (`11282` / `0.13.9`), compatible with KernelSU & Magisk; tested alongside `zygisksu`, `playintegrityfix`, `magic_mount`, `zygisk-assistant`, and `zygisk_shamiko` |
 
 ---
 
-## 2. Two-Layer Architecture (Why Both Layers Were Needed)
+## 2. Architecture (Two Required Layers)
 
-Fixing either layer alone still left dropped typing keystrokes on S231018:
+Both layers are needed together on S231018: patching only the userspace module leaves kernel `InputReader (0x35/0x36)` drops and disabled `HSEN`; patching only `vendor_boot` leaves the `200ms` SurfaceFlinger timer regression and PowerHAL resetting GPU/CPU/`thrm_enable` floors after app switches.
 
 ```text
-+-----------------------------------------------------------------------------+
-| LAYER 1: KERNEL DRIVER  (vendor_boot -> lib/modules/himax_mmi.ko)           |
-|-----------------------------------------------------------------------------|
-| [P1+P2] H1 @ 0x11938/0x119C8 : Propagate SPI read error status (no fake 1)  |
-| [P3]    H2 @ 0x23650         : Reject short SPI reads (actual != len+3)     |
-| [P4+P5] H3/H4 @ 0x0484C/0x04AEC : Clear all slots BEFORE SPI/excp resets    |
-| [P6]    0x04BC0              : Fix prevent_notch offset (#0x3C -> #0x4C)    |
-| [P7]    H5 @ 0x1A514         : Enable HSEN (0x10007F14 = 0xA55AA55A) awake  |
-| [P9]    H7 @ 0x037B8         : Check p_point_num | pre_finger_mask on lift  |
-| [P10]   H6 @ 0x03610/0x036AC : Emit ABS_MT_TRACKING_ID BEFORE X/Y/ATTRS     |
-| [Edge]  0x23C8C..0x23CA0     : Keep native 0x2002 Edge IRQ (int_is_edge=1)  |
-+-----------------------------------------------------------------------------+
-                                      |
-                                      v
-+-----------------------------------------------------------------------------+
-| LAYER 2: ANDROID INPUT, SURFACEFLINGER & POWERHAL (magisk_module v6.1)      |
-|-----------------------------------------------------------------------------|
-| system.prop : Restore ro.surface_flinger.set_touch_timer_ms=2000 (was 200!) |
-|               windowsmgr.max_events_per_sec=240, disable_backpressure=1     |
-| /system/usr/idc/ : himax-touchscreen.idc (pressure=none, size=diameter)     |
-|                    himax-stylus.idc (Pen 2 direct spots, 4096 pressure)     |
-|                    (Removed obsolete duplicate himax_tp.idc)                |
-| service.sh  : Backlight-based loop (0 extra forks) restores floors lost to  |
-|               MTK PowerHAL (policy0>=1.2G, policy6>=1.4G, GPU>=648M,        |
-|               sugov_ext down=30000us, fpsgo=0, thrm_enable=0, uclamp TA=1)  |
-|               & sleeps cleanly at 500/725/390MHz on screen off              |
-|               One-shot echo 0 > /proc/game_mode (no 2s SPI read flood!)    |
-+-----------------------------------------------------------------------------+
+Layer 1 — Kernel Driver (vendor_boot -> lib/modules/himax_mmi.ko)
+  [P1+P2 / H1] 0x11938, 0x119C8 : Propagate SPI read error status instead of hardcoded return 1
+  [P3 / H2]    0x23650          : Reject truncated SPI reads (actual_length != len + 3 -> -EIO + unlock)
+  [P4+P5/H3+H4]0x0484C, 0x04AEC : Clear all active touch slots before SPI / exception resets
+  [P6]         0x04BC0          : Fix prevent_notch recovery buffer offset (#0x3C -> #0x4C)
+  [P7 / H5]    0x1A514          : Enable High-Sensitivity mode (0x10007F14 = 0xA55AA55A) on boot & resume
+  [P9 / H7]    0x037B8          : Check both p_point_num and pre_finger_mask ([x20, #0x90]) on lift
+  [P10 / H6]   0x03610, 0x036AC : Emit input_mt_report_slot_state before coordinates & attributes
+  [Native IRQ] 0x23C8C..0x23CA0 : Preserve hardware Edge trigger mode (0x2002)
+
+Layer 2 — Android Input, Display & PowerHAL (magisk_module -> tb350xu-s231018-touch-fix.zip)
+  system.prop : Restore ro.surface_flinger.set_touch_timer_ms=2000 (was 200ms)
+                windowsmgr.max_events_per_sec=240, ro.surface_flinger.set_idle_timer_ms=1000,
+                debug.sf.disable_backpressure=1
+  /system/usr/idc/ : himax-touchscreen.idc (pressure.calibration=none, size.calibration=diameter)
+                     himax-stylus.idc (Precision Pen 2 touchScreen/spots, 4096 pressure, filter=2)
+  service.sh  : Zero-fork backlight poll (2s awake / 5s asleep) restores drifted awake floors
+                (policy0 >= 1200000, policy6 >= 1400000, sugov_ext down=30000us, gpu_bottom >= 648000,
+                 fpsgo_enable=0, thrm_enable=0, top-app/cpu.uclamp.latency_sensitive=1)
+                without downgrading active PowerHAL boosts; sleeps at 500/725/390MHz when screen off;
+                sets /proc/game_mode=0 once per wake (no 2s SPI read loop or dmesg spam)
 ```
 
 ---
 
-## 3. Complete Summary of All 24 Investigated Bugs
+## 3. Summary of All 24 Verified Issues
 
-Detailed instruction-level proofs live in [`docs/ALL_VERIFIED_BUGS.md`](docs/ALL_VERIFIED_BUGS.md) and [`docs/S231018_ULTIMATE_VERIFICATION_REPORT.md`](docs/S231018_ULTIMATE_VERIFICATION_REPORT.md).
+Full disassembly offsets, relocation details, and live telemetry are documented in [`docs/ALL_VERIFIED_BUGS.md`](docs/ALL_VERIFIED_BUGS.md) and [`docs/S231018_VERIFICATION_REPORT.md`](docs/S231018_VERIFICATION_REPORT.md).
 
-| ID(s) | Area | Problem Summary | S231018 Resolution |
+| Bug ID(s) | Subsystem | Finding / Root Cause on S231018 | Resolution |
 | :--- | :--- | :--- | :--- |
-| **BUG-01** | `hx83102j_read_event_stack` | Ignored `himax_bus_read()` errors (`mov w0, #1`) | **Fixed (`H1`)** via unused `[sp+0]` |
-| **BUG-02** | `himax_bus_read` | Ignored truncated `spi_message.actual_length` | **Fixed (`H2`)** -> `-EIO` + mutex unlock |
-| **BUG-03** | `himax_ts_work` | Missing `himax_report_all_leave_event` before resets | **Fixed (`H3`, `H4`)** (`x19 = private_ts`) |
-| **BUG-04** | `himax_ts_work` | Wrong `prevent_notch` buffer offset (`#0x3c` vs `#0x4c`) | **Fixed (`P6`)** at `0x04BC0` |
-| **BUG-05** | `himax_mcu_resend_cmd_func` | High-Sensitivity (`HSEN` `0x10007F14`) never turned ON | **Fixed (`H5`)** -> `0x5A 0xA5 0x5A 0xA5` |
-| **BUG-06 / 07 / 08** | FW / BSS / Mutex | Palm-stylus priority lock, `tp_usb_plug_status` padding, SPI mutex layout | **Mitigated / Verified Benign / Preserved** |
-| **BUG-09** | `request_threaded_irq` | Legacy Android 12 Level-Low `0x2008` override | **Intentionally Omitted** (S231018 HW uses Edge `0x2002`) |
-| **BUG-10 / 19** | `himax_report_data` | `cbz w8` skipped cleanup while `pre_finger_mask` active | **Fixed (`H7`)**: checks `w8 \| [x20, #0x90]` |
-| **BUG-11 / 12 / 24** | InputReader `.idc` | `pressure.scale` 1s tap lag, smoothing filter, dead `himax_tp.idc` | **Fixed**: clean `/system/usr/idc/` overlay |
-| **BUG-13 / 20** | `himax_report_data` | Coordinates (`0x35/0x36`) sent before `TRACKING_ID`; `.rela.text.himax_report_data_init` safety | **Fixed (`H6`)**: zero `0x35/0x36` drops, reloc-safe |
-| **BUG-14 / 21** | Display / SurfaceFlinger | Old module `set_touch_timer_ms=200` dropped Hz between keystrokes (replacing forced 120Hz lock) | **Fixed**: restored `2000ms` timer; **no forced 120Hz lock** |
-| **BUG-15 / 22** | FPSGO / MTK PowerHAL | `mtkpower@1.0-service` resets `gpu_bottom_freq`, `thrm_enable`, `scaling_min_freq`, `sugov_ext` | **Fixed**: 2s awake floor guard without fighting boosts |
-| **BUG-16 / 17** | SystemUI / Pen 2 | Window blur shader stall; stylus classified as `pointer` | **Fixed**: `disable_window_blurs=1` + `himax-stylus.idc` |
-| **BUG-18** | Platform Vibrator | Legacy A12 vibrator unbind/haptic mute | **Removed** (S231018 has no haptics issue; stock vibrator intact) |
-| **BUG-23** | `/proc/game_mode` | Reading `/proc/game_mode` in loop triggers SPI reads & `[HXTP][ERROR]` `dmesg` spam | **Fixed**: one-shot `echo 0` at boot/wake only |
+| **BUG-01** | `hx83102j_read_event_stack` | Ignores `himax_bus_read()` result and returns `1` | Fixed (`H1` via `[sp+0]`) |
+| **BUG-02** | `himax_bus_read` | Skips `spi_message.actual_length` validation | Fixed (`H2` -> `-EIO` + unlock) |
+| **BUG-03** | `himax_ts_work` | Missing pre-reset contact cleanup before resets | Fixed (`H3`, `H4` -> `0x054E8`) |
+| **BUG-04** | `himax_ts_work` | Wrong `prevent_notch` struct offset (`#0x3c`) | Fixed (`P6` -> `#0x4c`) |
+| **BUG-05** | `himax_mcu_resend_cmd_func` | `HSEN` (`0x10007F14`) stays `0x00000000` | Fixed (`H5` -> `0x5A 0xA5 0x5A 0xA5`) |
+| **BUG-06 / 07 / 08** | FW / BSS / Mutex | Palm-pen priority lock, symbol alignment, SPI mutex scope | Mitigated / Benign / Preserved |
+| **BUG-09** | `request_threaded_irq` | Older Level-Low (`0x2008`) override vs hardware `EDGE` mode | Intentionally omitted on S231018 |
+| **BUG-10 / 19** | `himax_report_data` | Release branch checked `p_point_num` only (`pre_finger_mask` ignored) | Fixed (`H7`: ORs `[x20, #0x90]`) |
+| **BUG-11 / 12 / 24** | InputReader `.idc` | Pressure threshold lag, motion smoothing, dead `himax_tp.idc` | Fixed in `/system/usr/idc/` |
+| **BUG-13 / 20** | `himax_report_data` | `0x35/0x36` sent before tracking ID; `.rela.text.himax_report_data_init` safety | Fixed (`H6` + `sym 1496` reloc) |
+| **BUG-14 / 21** | SurfaceFlinger | Old module `set_touch_timer_ms=200` dropped refresh between taps | Fixed (`2000ms`); native RR kept |
+| **BUG-15 / 22** | FPSGO / MTK PowerHAL | `mtkpower@1.0-service` resets clocks, GPU, `thrm_enable`, and `sugov_ext` | Fixed (2s awake guard loop) |
+| **BUG-16 / 17** | SystemUI / Pen 2 | Window blur shader stall; stylus treated as `pointer` | Fixed (`disable_window_blurs=1` + IDC) |
+| **BUG-18** | Vibrator Driver | Legacy `soc:regulator_vibrator` unbind / haptics mute | Removed (S231018 haptics are clean) |
+| **BUG-23** | `/proc/game_mode` | Reading `/proc/game_mode` in loop floods SPI & `[HXTP][ERROR]` logs | Fixed (one-shot `echo 0` on wake) |
 
 ---
 
-## 4. Complete Step-by-Step Setup Guide (S231018)
+## 4. Step-by-Step Installation Guide (`S231018`)
 
 ### Prerequisites
-- Unlocked bootloader (`fastboot getvar unlocked` -> `yes`). **Never relock the bootloader.**
-- Android 14 stock ROM **`TB350XU_USER_S231018_2601050930_MP_ROW`** (`TB350XU_S231018_260105_ROW`).
+- Stock Android 14 ROM **`TB350XU_USER_S231018_2601050930_MP_ROW`** (`TB350XU_S231018_260105_ROW`).
+- Unlocked bootloader (`fastboot getvar unlocked` = `yes`). **Never relock the bootloader with patched images.**
+- Python 3.10+ with `capstone` and `lz4` (`pip install capstone lz4`) plus Android `adb` and `fastboot`.
 - Root manager installed (**APatch**, **KernelSU**, or **Magisk**).
-- Python 3.10+ with `capstone` (`pip install capstone`) + Android `adb` & `fastboot`.
 
-### Step 1: Build & Verify Patched `vendor_boot` Image
-Place your stock `vendor_boot.img` (`0c06ebe186f39b1e...`) at the default path (or pass `--stock-vendor-boot <path>`) and run:
+### Step 1: Build & Verify `vendor_boot` Image
+From stock `TB350XU_USER_S231018_2601050930_MP_ROW\image\vendor_boot.img` (`0c06ebe1...`):
 ```bash
-python tools/build_s231018_ultimate_touch.py \
-  --stock-vendor-boot path/to/TB350XU_USER_S231018_2601050930_MP_ROW/image/vendor_boot.img \
-  --out-img vendor_boot_TB350XU_S231018_ULTIMATE_TOUCH.img
+python tools/patch_vendor_boot.py \
+  --stock-vendor-boot "TB350XU_USER_S231018_2601050930_MP_ROW/image/vendor_boot.img" \
+  --out-img "vendor_boot_TB350XU_S231018_touch_fix.img"
 ```
-Verify the built SHA-256 matches [`SHA256SUMS.txt`](SHA256SUMS.txt):
-- `vendor_boot_TB350XU_S231018_ULTIMATE_TOUCH.img`: **`f570272f25a1c2354b60469cda6e163c56c149f5f84f2ebf0cddc21565c77402`**
+Confirm the SHA-256 matches [`SHA256SUMS.txt`](SHA256SUMS.txt):
+- `vendor_boot_TB350XU_S231018_touch_fix.img` = `f570272f25a1c2354b60469cda6e163c56c149f5f84f2ebf0cddc21565c77402`
 
-### Step 2: Flash `vendor_boot` Safely (Active Slot First)
-1. Boot into fastboot and confirm slot & lock state:
+### Step 2: Flash `vendor_boot` (Active Slot First)
+1. Reboot to fastboot and check current active slot:
    ```cmd
    adb reboot bootloader
    fastboot devices
    fastboot getvar current-slot
    fastboot getvar unlocked
    ```
-2. Flash your active slot **first** (`_a` shown; use `_b` if `current-slot: b`) and reboot to test before touching the backup slot:
+2. Flash the active slot first (`_a` shown; use `_b` if `current-slot: b`) and boot to test while leaving the other slot as an untouched fallback:
    ```cmd
-   fastboot flash vendor_boot_a vendor_boot_TB350XU_S231018_ULTIMATE_TOUCH.img
+   fastboot flash vendor_boot_a vendor_boot_TB350XU_S231018_touch_fix.img
    fastboot reboot
    ```
-   *(Or double-click/run `tools\FLASH_S231018_ULTIMATE_TOUCH.cmd`.)*
-   Once confirmed working, you can optionally mirror to the inactive slot too (`fastboot flash vendor_boot_b vendor_boot_TB350XU_S231018_ULTIMATE_TOUCH.img`).
+   *(Or use `tools\flash_vendor_boot.cmd` interactively.)*
+   After verifying touch/typing works cleanly, you can optionally mirror the image to `vendor_boot_b` too.
 
-### Step 3: Install APatch / Magisk / KSU Module
-Flash [`releases/TB350XU_Master_Touch_and_Performance_Fix.zip`](releases/TB350XU_Master_Touch_and_Performance_Fix.zip) (reproducible via `python tools/build_module_zip.py`, SHA-256 `8596ec6f390706df6f3802a9bf229db0928af63a206edc344d6f63e4a9c541d3`):
-1. Open **APatch** / **Magisk** / **KernelSU Manager** -> **Modules** -> **Install**.
-2. Select `releases/TB350XU_Master_Touch_and_Performance_Fix.zip`.
-3. Reboot once so `system.prop`, `/system/usr/idc/*`, and `service.sh` activate.
+### Step 3: Install Root Module
+1. Use [`releases/tb350xu-s231018-touch-fix.zip`](releases/tb350xu-s231018-touch-fix.zip) (or regenerate identically with `python tools/pack_module.py`).
+2. In **APatch** / **Magisk** / **KernelSU Manager** -> **Modules** -> **Install**, flash `tb350xu-s231018-touch-fix.zip`.
+3. Reboot once so `system.prop`, `/system/usr/idc/*.idc`, and `service.sh` load (`customize.sh` automatically schedules removal of older `helio_g99_oc` or `tb350xu_master_touch_fix` module folders if present).
 
-*(Play Integrity & Banking Stealth Note: This module only mounts `/system/usr/idc/*.idc`, `system.prop`, and `service.sh`. It works cleanly alongside minimal Zygisk stacks such as `zygisksu` + `playintegrityfix` + `magic_mount` + `zygisk-assistant` + `zygisk_shamiko`.)*
-
-### Step 4: Verify Live Hardware Behavior Over ADB
-Run via `adb shell su`:
+### Step 4: Verify Live Hardware & Input Behavior
+Via `adb shell su`:
 ```sh
-# 1. Verify HSEN (0x10007F14) is ACTIVE (0x5A 0xA5 0x5A 0xA5)
+# 1. Confirm HSEN (0x10007F14) is ACTIVE (0x5A 0xA5 0x5A 0xA5)
 echo "register,r:x10007F14" > /proc/android_touch/debug && cat /proc/android_touch/debug | head -n 3
 
-# 2. Verify Edge IRQ & loaded module
+# 2. Confirm native Edge trigger mode and loaded driver
 echo "int" > /proc/android_touch/debug && cat /proc/android_touch/debug
 lsmod | grep himax_mmi
 
-# 3. Verify SurfaceFlinger 2000ms touch timer & native refresh rate preserved
+# 3. Confirm 2000ms SurfaceFlinger touch timer and unlocked Settings refresh rate
 getprop ro.surface_flinger.set_touch_timer_ms
 settings get system min_refresh_rate
 settings get system peak_refresh_rate
 
-# 4. Verify PowerHAL-resilient awake floors & clean dmesg (zero [HXTP][ERROR])
+# 4. Confirm PowerHAL-resistant awake floors and clean kernel log
 head -n 1 /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq \
           /sys/devices/system/cpu/cpufreq/policy6/scaling_min_freq \
           /sys/devices/system/cpu/cpufreq/policy0/sugov_ext/down_rate_limit_us \
@@ -159,23 +146,18 @@ head -n 1 /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq \
           /dev/cpuctl/top-app/cpu.uclamp.latency_sensitive
 dmesg | grep -iE "HXTP|himax" | tail -n 10
 
-# 5. Type quickly on screen and confirm ZERO InputReader (0x35/0x36) errors
+# 5. Confirm zero InputReader coordinate ordering warnings after typing
 logcat -d -s InputReader:W
 ```
 
 ---
 
-## 5. Rollback & Further Documentation
-- Instant recovery steps: [`docs/ROLLBACK.md`](docs/ROLLBACK.md)
-- Complete 24-bug forensic catalog: [`docs/ALL_VERIFIED_BUGS.md`](docs/ALL_VERIFIED_BUGS.md)
-- Live S231018 verification & instruction map: [`docs/S231018_ULTIMATE_VERIFICATION_REPORT.md`](docs/S231018_ULTIMATE_VERIFICATION_REPORT.md)
-- Full version history: [`docs/CHANGELOG.md`](docs/CHANGELOG.md)
-- Formal manufacturer escalation report: [`docs/EXECUTIVE_ESCALATION_LETTER_TO_LENOVO.md`](docs/EXECUTIVE_ESCALATION_LETTER_TO_LENOVO.md)
+## 5. Documentation & Tools Index
+- Bug inventory (`BUG-01..BUG-24`): [`docs/ALL_VERIFIED_BUGS.md`](docs/ALL_VERIFIED_BUGS.md)
+- Live hardware verification report: [`docs/S231018_VERIFICATION_REPORT.md`](docs/S231018_VERIFICATION_REPORT.md)
+- Rollback & recovery guide: [`docs/ROLLBACK.md`](docs/ROLLBACK.md)
 - Bootloader & AVB analysis: [`docs/BOOTLOADER_AND_AVB_FEASIBILITY.md`](docs/BOOTLOADER_AND_AVB_FEASIBILITY.md)
-- Real-time ADB diagnostic monitor (`tools/monitor_touch.py` / `tools/MONITOR_TOUCH_RECOVERY.cmd`)
-
----
-
-## Credits
-- **Author & Lead Reverse-Engineer:** Ruturaj Pawar ([@rpawarx29](https://github.com/rpawarx29))
-- Hardware verification, ARM64 binary patching, and S231018 PowerHAL/InputReader stabilization completed on `TB350XU` (`HVA5R4L6`).
+- Sensitivity / `HSEN` analysis: [`docs/SENSITIVITY_RESEARCH_AND_TUNING.md`](docs/SENSITIVITY_RESEARCH_AND_TUNING.md)
+- USB power & resume flow: [`docs/USB_POWER_AND_RESUME_ANALYSIS.md`](docs/USB_POWER_AND_RESUME_ANALYSIS.md)
+- Changelog: [`docs/CHANGELOG.md`](docs/CHANGELOG.md)
+- Live touch log monitor: [`tools/monitor_touch.py`](tools/monitor_touch.py) / [`tools/monitor_touch.cmd`](tools/monitor_touch.cmd)

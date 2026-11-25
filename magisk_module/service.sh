@@ -1,7 +1,6 @@
 #!/system/bin/sh
-# Lenovo Tab P11 (2nd Gen) - TB350XU (Helio G99 / MT6789)
-# Ultimate Touch & Performance Daemon (v6.1-Ultimate)
-# Preserves Native Haptics & User Settings Refresh Rate
+# Lenovo Tab P11 Gen 2 (TB350XU / TB350FU) - Android 14 S231018
+# Touch & Performance Service Daemon (preserves native refresh rate & haptics)
 
 while [ "$(getprop sys.boot_completed)" != "1" ]; do
     sleep 1

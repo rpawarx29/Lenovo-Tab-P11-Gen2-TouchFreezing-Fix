@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""Reproducible builder for Lenovo Tab P11 Gen 2 (TB350XU) S231018 Ultimate Touch vendor_boot.
+"""Patch stock S231018 vendor_boot.img for Lenovo Tab P11 Gen 2 (TB350XU / TB350FU).
 
-Applies verified binary hooks H1..H7 (P1..P7, P9, P10) onto stock S231018
-lib/modules/himax_mmi.ko (5.10.233-android12-9-g9568a331d924, 2.1.0.2_Tulip_01) while
-preserving:
-  - Native EDGE interrupt trigger mode (0x2002, P8 omitted to prevent sticky release lag)
-  - All 11,536 original .rela.text.himax_report_data_init relocations (+1 appended R_AARCH64_CALL26)
-  - ARM64 PAC, Shadow Call Stack (x18), CFI, section alignments, and AVB HashDescriptor
+Applies verified ARM64 binary hooks H1..H7 (P1..P7, P9, P10) to lib/modules/himax_mmi.ko
+(driver 2.1.0.2_Tulip_01 on Android 14 S231018, kernel 5.10.233-android12-9-g9568a331d924):
+  - [P1+P2 / H1] 0x11938 + 0x119C8: Propagate real SPI read status in hx83102j_read_event_stack
+  - [P3 / H2]    0x23650: Reject short SPI reads in himax_bus_read (actual_length != w23 -> -EIO)
+  - [P4 / H3]    0x0484C: Release all touch contacts before SPI read-fail reset
+  - [P5 / H4]    0x04AEC: Release all touch contacts before exception recovery reset
+  - [P6]         0x04BC0: Fix prevent_notch recovery struct offset (#0x3C -> #0x4C)
+  - [P7 / H5]    0x1A514: Enable High-Sensitivity mode (HSEN 0x10007F14 = 0xA55AA55A) when active
+  - [P9 / H7]    0x037B8: Check BOTH p_point_num and pre_finger_mask on lift so slots clear cleanly
+  - [P10 / H6]   0x03610 + 0x036AC: Report slot state before coordinates & attributes (no 0x35/0x36 drops)
+Preserves native EDGE IRQ trigger (0x2002) matching hardware int_is_edge=1.
 """
 
 import argparse
@@ -24,14 +29,14 @@ DEFAULT_STOCK_VB = (
     / "image"
     / "vendor_boot.img"
 )
-DEFAULT_OUT_VB = REPO_ROOT.parent / "vendor_boot_TB350XU_S231018_ULTIMATE_TOUCH.img"
-DEFAULT_OUT_KO = REPO_ROOT.parent / "himax_mmi_s231018_ultimate.ko"
+DEFAULT_OUT_VB = REPO_ROOT.parent / "vendor_boot_TB350XU_S231018_touch_fix.img"
+DEFAULT_OUT_KO = REPO_ROOT.parent / "himax_mmi_s231018_patched.ko"
 
 EXPECTED_STOCK_VB_SHA256 = "0c06ebe186f39b1ec64398fc8e3bad74b0c2a7c4fae8134822f7adcc12c0a7c4"
 EXPECTED_STOCK_KO_SHA256 = "1085f0a9b0b12dabb6a1c658982798b1bc152dddc44abae055378a7ff6ed8b29"
 
 sys.path.insert(0, str(TOOLS_DIR))
-import BUILD_FINAL  # noqa: E402
+import vendor_boot_image as vbi  # noqa: E402
 
 
 def sha256(b: bytes) -> str:
@@ -136,30 +141,30 @@ def build_image(stock_vb: pathlib.Path, out_vb: pathlib.Path, out_ko: pathlib.Pa
     assert sha256(vb_raw) == EXPECTED_STOCK_VB_SHA256, f"Unexpected stock vendor_boot sha256: {sha256(vb_raw)}"
     print(f"[+] Loaded stock S231018 vendor_boot.img ({len(vb_raw)} bytes, SHA256={EXPECTED_STOCK_VB_SHA256[:16]}...)")
 
-    info = BUILD_FINAL.parse_image(vb_raw)
-    cpio = BUILD_FINAL.decompress_legacy(info["ramdisk"])
-    entries = BUILD_FINAL.cpio_entries(cpio)
+    info = vbi.parse_image(vb_raw)
+    cpio = vbi.decompress_legacy(info["ramdisk"])
+    entries = vbi.cpio_entries(cpio)
     ko_entry = next(x for x in entries if x["name"] == "lib/modules/himax_mmi.ko")
     ko = cpio[ko_entry["body"] : ko_entry["body"] + ko_entry["size"]]
     assert sha256(ko) == EXPECTED_STOCK_KO_SHA256, f"Unexpected stock himax_mmi.ko sha256: {sha256(ko)}"
     print(f"[+] Extracted stock himax_mmi.ko ({len(ko)} bytes, SHA256={EXPECTED_STOCK_KO_SHA256[:16]}...)")
 
-    secs = BUILD_FINAL.elf_sections(ko)
+    secs = vbi.elf_sections(ko)
     byname = {s["name"]: s for s in secs}
     orig_text = byname[".text"]["data"]
     assert len(orig_text) == 0x249C8
 
     expected_orig = {
-        0x11938: bytes.fromhex("08714239"),  # ldrb w8, [x8, #0x9c] (P1)
-        0x119C8: bytes.fromhex("20008052"),  # mov w0, #1 (P2)
-        0x23650: bytes.fromhex("e203132a"),  # mov w2, w19 (P3)
-        0x0484C: bytes.fromhex("21008052"),  # mov w1, #1 (P4)
-        0x04AEC: bytes.fromhex("a0023fd6"),  # blr x21 (P5)
-        0x04BC0: bytes.fromhex("00f10091"),  # add x0, x8, #0x3c (P6)
-        0x1A514: bytes.fromhex("696242f9"),  # ldr x9, [x19, #0x4c0] (P7)
-        0x037B8: bytes.fromhex("480d0034"),  # cbz w8, #0x3960 (P9)
-        0x03610: bytes.fromhex("80ba40f9"),  # ldr x0, [x20, #0x170] (P10)
-        0x036AC: bytes.fromhex("b6ffff17"),  # b #0x3584 (P10 loop tail)
+        0x11938: bytes.fromhex("08714239"),
+        0x119C8: bytes.fromhex("20008052"),
+        0x23650: bytes.fromhex("e203132a"),
+        0x0484C: bytes.fromhex("21008052"),
+        0x04AEC: bytes.fromhex("a0023fd6"),
+        0x04BC0: bytes.fromhex("00f10091"),
+        0x1A514: bytes.fromhex("696242f9"),
+        0x037B8: bytes.fromhex("480d0034"),
+        0x03610: bytes.fromhex("80ba40f9"),
+        0x036AC: bytes.fromhex("b6ffff17"),
     }
     for off, exp in expected_orig.items():
         actual = orig_text[off : off + 4]
@@ -175,18 +180,18 @@ def build_image(stock_vb: pathlib.Path, out_vb: pathlib.Path, out_ko: pathlib.Pa
 
     # H1 [P1]: hx83102j_read_event_stack status capture
     H1 = len(text)
-    text += bytes.fromhex("1f000071")  # cmp w0, #0
-    text += bytes.fromhex("e0179f1a")  # cset w0, eq
-    text += bytes.fromhex("e00300b9")  # str w0, [sp]
-    text += bytes.fromhex("08714239")  # ldrb w8, [x8, #0x9c]
+    text += bytes.fromhex("1f000071")
+    text += bytes.fromhex("e0179f1a")
+    text += bytes.fromhex("e00300b9")
+    text += bytes.fromhex("08714239")
     text += enc_b(len(text), 0x1193C)
 
     # H2 [P3]: himax_bus_read actual_length == frame_length check
     H2 = len(text)
-    text += bytes.fromhex("a9c35bb8")  # ldur w9, [x29, #-0x44]
-    text += bytes.fromhex("3f01176b")  # cmp w9, w23
-    text += enc_cond_b(1, len(text), 0x23744)  # b.ne -EIO unlock path
-    text += bytes.fromhex("e203132a")  # mov w2, w19
+    text += bytes.fromhex("a9c35bb8")
+    text += bytes.fromhex("3f01176b")
+    text += enc_cond_b(1, len(text), 0x23744)
+    text += bytes.fromhex("e203132a")
     text += enc_b(len(text), 0x23654)
 
     # H3 [P4]: himax_report_all_leave_event before SPI read-fail reset
@@ -208,7 +213,7 @@ def build_image(stock_vb: pathlib.Path, out_vb: pathlib.Path, out_ko: pathlib.Pa
     H5_skip = H5 + 6 * 4
     text += bytes.fromhex("e87bbfa9")
     text += enc_cbz(19, True, False, H5 + 4, H5_skip)
-    text += bytes.fromhex("61064039")  # ldrb w1, [x19, #1]
+    text += bytes.fromhex("61064039")
     text += enc_cbz(1, False, True, H5 + 12, H5_skip)
     text += bytes.fromhex("20008052")
     text += enc_bl(H5 + 20, 0x14658)
@@ -258,19 +263,18 @@ def build_image(stock_vb: pathlib.Path, out_vb: pathlib.Path, out_ko: pathlib.Pa
         out_ko.write_bytes(new_ko)
     print(f"[+] Built patched himax_mmi.ko: {len(new_ko)} bytes (+{len(text) - base}B .text), SHA256={sha256(new_ko)}")
 
-    # Smoke-disassemble appended hooks
     md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
     assert len(list(md.disasm(text[base:], base))) == (len(text) - base) // 4
 
-    new_cpio = BUILD_FINAL.replace_cpio(cpio, entries, "lib/modules/himax_mmi.ko", new_ko)
-    comp_rd = BUILD_FINAL.compress_legacy(new_cpio)
-    final_vb = BUILD_FINAL.repack(vb_raw, info, comp_rd)
+    new_cpio = vbi.replace_cpio(cpio, entries, "lib/modules/himax_mmi.ko", new_ko)
+    comp_rd = vbi.compress_legacy(new_cpio)
+    final_vb = vbi.repack(vb_raw, info, comp_rd)
     assert len(final_vb) == len(vb_raw) == 67108864
     out_vb.write_bytes(final_vb)
 
-    chk_info = BUILD_FINAL.parse_image(final_vb)
-    chk_cpio = BUILD_FINAL.decompress_legacy(chk_info["ramdisk"])
-    chk_e = next(x for x in BUILD_FINAL.cpio_entries(chk_cpio) if x["name"] == "lib/modules/himax_mmi.ko")
+    chk_info = vbi.parse_image(final_vb)
+    chk_cpio = vbi.decompress_legacy(chk_info["ramdisk"])
+    chk_e = next(x for x in vbi.cpio_entries(chk_cpio) if x["name"] == "lib/modules/himax_mmi.ko")
     assert chk_cpio[chk_e["body"] : chk_e["body"] + chk_e["size"]] == new_ko
     print(f"[+] Roundtrip verified: {out_vb} (SHA256={sha256(final_vb)})")
 

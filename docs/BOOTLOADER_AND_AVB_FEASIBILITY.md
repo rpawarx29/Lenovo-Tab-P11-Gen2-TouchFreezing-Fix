@@ -1,15 +1,15 @@
 # BOOTLOADER RELOCK & ANDROID VERIFIED BOOT (AVB) FEASIBILITY REPORT
-**Target Device:** Lenovo Tab P11 Gen 2 (TB350XU)  
-**Platform:** MediaTek MT6789 (Helio G99)  
-**Partition Modified:** `vendor_boot` (`vendor_boot.img`)  
-**Critical Safety Notice:** Mandatory reading prior to any flashing operation  
+**Target Device:** Lenovo Tab P11 Gen 2 (TB350XU)
+**Platform:** MediaTek MT6789 (Helio G99)
+**Partition Modified:** `vendor_boot` (`vendor_boot.img`)
+**Critical Safety Notice:** Mandatory reading prior to any flashing operation
 
 ---
 
 ## 1. Executive Determination
 
 > [!CAUTION]
-> **RELOCKING THE BOOTLOADER WITH THIS MODIFIED VENDOR_BOOT IMAGE IS NOT SUPPORTED AND WILL HARD-BRICK THE TABLET.**  
+> **RELOCKING THE BOOTLOADER WITH THIS MODIFIED VENDOR_BOOT IMAGE IS NOT SUPPORTED AND WILL HARD-BRICK THE TABLET.**
 > Under no circumstances should `fastboot flashing lock` or `fastboot oem lock` be executed while running this modified image.
 
 ---

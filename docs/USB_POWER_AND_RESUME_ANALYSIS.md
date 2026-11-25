@@ -1,7 +1,7 @@
 # USB POWER, CHARGING & RESUME SUBSYSTEM ANALYSIS
-**Target Subsystem:** Power, USB Charger Framework, and Suspend/Resume Interaction  
-**Device:** Lenovo Tab P11 Gen 2 (TB350XU)  
-**Binary Focus:** `himax_mmi.ko` + `mtk_charger_framework.ko`  
+**Target Subsystem:** Power, USB Charger Framework, and Suspend/Resume Interaction
+**Device:** Lenovo Tab P11 Gen 2 (TB350XU)
+**Binary Focus:** `himax_mmi.ko` + `mtk_charger_framework.ko`
 
 ---
 

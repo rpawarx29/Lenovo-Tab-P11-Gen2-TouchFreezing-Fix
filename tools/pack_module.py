@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Packages magisk_module/ into a LF-normalized flashable ZIP (APatch / Magisk / KernelSU)."""
+"""Packages magisk_module/ into a deterministic LF-normalized flashable ZIP."""
 
 import argparse
 import hashlib
@@ -8,7 +8,7 @@ import zipfile
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 MOD_DIR = REPO_ROOT / "magisk_module"
-DEFAULT_OUT = REPO_ROOT / "releases" / "TB350XU_Master_Touch_and_Performance_Fix.zip"
+DEFAULT_OUT = REPO_ROOT / "releases" / "tb350xu-s231018-touch-fix.zip"
 
 
 def build_zip(mod_dir: pathlib.Path, out_zip: pathlib.Path) -> str:
